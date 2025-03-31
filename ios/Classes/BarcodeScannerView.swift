@@ -1,12 +1,6 @@
-//
-//  BarcodeScanner.swift
-//  Pods
-//
-//  Created by TTGP-oaidq-mac on 31/3/25.
-//
-
 import Flutter
 import UIKit
+import Vision
 
 class BarcodeScannerViewFactory: NSObject, FlutterPlatformViewFactory {
     private var messenger: FlutterBinaryMessenger
@@ -38,7 +32,8 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
     private var _view: UIView
     let scannerViewController: BarcodeScannerViewController
     let eventChannel: FlutterEventChannel
-    let swiftStreamHandler: SwiftStreamHandler
+    let methodChannel: FlutterMethodChannel
+    let eventChannelHandler: EventChannelHandler
     
     init(
         frame: CGRect,
@@ -48,11 +43,12 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
     ) {
         _view = UIView()
         scannerViewController = BarcodeScannerViewController()
-        swiftStreamHandler = SwiftStreamHandler()
+        eventChannelHandler = EventChannelHandler()
+        methodChannel = FlutterMethodChannel(name: "barcode_scanner_\(viewId)", binaryMessenger: messenger)
         eventChannel = FlutterEventChannel(name: "flutter_barcode_scanner_\(viewId)", binaryMessenger: messenger)
-        eventChannel.setStreamHandler(swiftStreamHandler)
-        
         super.init()
+        methodChannel.setMethodCallHandler (self.methodChanelHandler)
+        eventChannel.setStreamHandler(eventChannelHandler)
         
         do {
             let configuration = try Configuration(serializedBytes: (args as! FlutterStandardTypedData).data)
@@ -60,7 +56,7 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
         } catch {
             
         }
-
+        
         scannerViewController.delegate = self
         _view.addSubview(scannerViewController.view)
     }
@@ -69,28 +65,92 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
         return _view
     }
     
+    private func methodChanelHandler(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        switch call.method {
+        case "detectBarcodesByImagePath":
+            self.detectBarcodes(inImageAtPath: call.arguments as! String, result: result)
+            break
+        case "pauseCamera":
+            self.scannerViewController.freezeCapture()
+            break;
+        case "resumeCamera":
+            self.scannerViewController.unfreezeCapture()
+            break;
+        default:
+            break
+        }
+    }
+    
+    
+    func detectBarcodes(inImageAtPath path: String, result: @escaping FlutterResult) {
+        // 1. Tạo URL từ đường dẫn tệp
+        let fileURL = URL(fileURLWithPath: path)
+        
+        // 2. Tải hình ảnh từ URL
+        guard let image = UIImage(contentsOfFile: fileURL.path) else {
+            print("Không thể tải hình ảnh từ đường dẫn: \(path)")
+            result(FlutterError(code: "Invalid image path", message: "Không thể tải hình ảnh từ đường dẫn: \(path)", details: nil))
+            return
+        }
+        
+        // 3. Chuyển đổi UIImage thành CIImage
+        guard let ciImage = CIImage(image: image) else {
+            print("Không thể tạo CIImage từ UIImage.")
+            result(FlutterError(code: "Error when converting UIImage to CIImage", message: "Không thể tạo CIImage từ UIImage.", details: nil))
+            return
+        }
+        
+        // 4. Tạo yêu cầu phát hiện mã vạch
+        let barcodeRequest = VNDetectBarcodesRequest { (request, error) in
+            if let error = error {
+                print("Lỗi khi phát hiện mã vạch: \(error.localizedDescription)")
+                result(FlutterError(code: "Error when scanning barcodes", message:"Lỗi khi phát hiện mã vạch: \(error.localizedDescription)", details: nil))
+                return
+            }
+            guard let results = request.results as? [VNBarcodeObservation] else {
+                print("Không có mã vạch nào được phát hiện.")
+                result([])
+                return
+            }
+            
+            // 5. Xử lý kết quả
+            result(results.map { $0.payloadStringValue ?? "" }.filter { !$0.isEmpty })
+            
+        }
+        
+        // 6. Tạo và thực thi VNImageRequestHandler
+        let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
+        do {
+            try handler.perform([barcodeRequest])
+        } catch {
+            print("Không thể thực hiện yêu cầu phát hiện mã vạch: \(error.localizedDescription)")
+            result(FlutterError(code: "Error when scanning barcodes", message:"Không thể thực hiện yêu cầu phát hiện mã vạch: \(error.localizedDescription)", details: nil))
+        }
+    }
+    
+    
     func didScanBarcodeWithResult(_ controller: BarcodeScannerViewController?, scanResult: ScanResult) {
         do {
-            swiftStreamHandler.eventSink?(try scanResult.serializedData())
+            eventChannelHandler.eventSink?(try scanResult.serializedData())
         } catch {
-            swiftStreamHandler.eventSink?(FlutterError(code: "err_serialize", message: "Failed to serialize the result", details: nil))
+            eventChannelHandler.eventSink?(FlutterError(code: "err_serialize", message: "Failed to serialize the result", details: nil))
         }
     }
     
     func didFailWithErrorCode(_ controller: BarcodeScannerViewController?, errorCode: String) {
-        swiftStreamHandler.eventSink?(FlutterError(code: errorCode, message: nil, details: nil))
+        eventChannelHandler.eventSink?(FlutterError(code: errorCode, message: nil, details: nil))
     }
     
 }
 
-class SwiftStreamHandler: NSObject, FlutterStreamHandler {
+class EventChannelHandler: NSObject, FlutterStreamHandler {
     var eventSink: FlutterEventSink?
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         eventSink = events
         return nil
     }
-
+    
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         eventSink = nil
         return nil

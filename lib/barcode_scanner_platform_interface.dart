@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'barcode_scanner_method_channel.dart';
@@ -23,7 +24,22 @@ abstract class BarcodeScannerPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+  /// The method channel used to interact with the native platform.
+  MethodChannel? methodChannel;
+
+  void init(int platformViewId) {
+    methodChannel = MethodChannel('barcode_scanner_$platformViewId');
+  }
+
+  Future<List<String>?> detectBarcodesByImagePath(String imagePath) {
+    throw UnimplementedError('detectBarcodesByImagePath has not been implemented.');
+  }
+
+  void pauseCamera() {
+    throw UnimplementedError('pauseCamera has not been implemented.');
+  }
+
+  void resumeCamera() {
+    throw UnimplementedError('resumeCamera has not been implemented.');
   }
 }

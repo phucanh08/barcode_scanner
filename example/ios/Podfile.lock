@@ -4,7 +4,7 @@ PODS:
     - MTBBarcodeScanner
     - SwiftProtobuf
   - Flutter (1.0.0)
-  - integration_test (0.0.1):
+  - image_picker_ios (0.0.1):
     - Flutter
   - MTBBarcodeScanner (5.0.11)
   - SwiftProtobuf (1.29.0)
@@ -12,7 +12,7 @@ PODS:
 DEPENDENCIES:
   - barcode_scanner (from `.symlinks/plugins/barcode_scanner/ios`)
   - Flutter (from `Flutter`)
-  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
 
 SPEC REPOS:
   trunk:
@@ -24,13 +24,13 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/barcode_scanner/ios"
   Flutter:
     :path: Flutter
-  integration_test:
-    :path: ".symlinks/plugins/integration_test/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
 
 SPEC CHECKSUMS:
-  barcode_scanner: c9ecf6cdfff10257d889e797b9f16f4e93251b80
+  barcode_scanner: ad0a65947eb6c85a9b7cb8e6a534887cd9c77c6c
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
+  image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   SwiftProtobuf: b7aa08087e2ab6d162862d143020091254095f69
 

@@ -1,10 +1,3 @@
-//
-//  BarcodeScannerViewController.swift
-//  Pods
-//
-//  Created by TTGP-oaidq-mac on 31/3/25.
-//
-
 import Foundation
 import MTBBarcodeScanner
 
@@ -13,6 +6,7 @@ class BarcodeScannerViewController: UIViewController {
     private var previewView: UIView?
     private var scanRect: ScannerOverlay?
     private var scanner: MTBBarcodeScanner?
+    private var isFreezeCapture: Bool = false
     
     var config: Configuration = Configuration.with {
         $0.strings = [
@@ -45,11 +39,21 @@ class BarcodeScannerViewController: UIViewController {
     }
     
     private var isFlashOn: Bool {
-        return device != nil && (device?.flashMode == AVCaptureDevice.FlashMode.on || device?.torchMode == .on)
+        let settings = AVCapturePhotoSettings()
+        return device != nil && (settings.flashMode == AVCaptureDevice.FlashMode.on || device?.torchMode == .on)
     }
     
     private var hasTorch: Bool {
         return device?.hasTorch ?? false
+    }
+    
+    public func freezeCapture() {
+        self.scanner?.freezeCapture()
+        isFreezeCapture = true
+    }
+    public func unfreezeCapture() {
+        self.scanner?.unfreezeCapture()
+        isFreezeCapture = false
     }
     
     override func viewDidLoad() {
@@ -143,6 +147,7 @@ class BarcodeScannerViewController: UIViewController {
         do {
             try scanner!.startScanning(with: cameraFromConfig, resultBlock: { codes in
                 self.drawOverlays(on: codes)
+                if (self.isFreezeCapture) {return}
                 if let code = codes?.first {
                     let codeType = self.formatMap.first(where: { $0.value == code.type });
                     let scanResult = ScanResult.with {
@@ -151,10 +156,7 @@ class BarcodeScannerViewController: UIViewController {
                         $0.format = codeType?.key ?? .unknown
                         $0.formatNote = codeType == nil ? code.type.rawValue : ""
                     }
-                    
-                    
-                    print(scanResult)
-                    self.scanner!.freezeCapture()
+                    self.freezeCapture()
                     self.scanResult(scanResult)
                 }
             })
@@ -267,8 +269,9 @@ class BarcodeScannerViewController: UIViewController {
             } catch {
                 return
             }
+            let settings = AVCapturePhotoSettings()
             
-            device.flashMode = on ? .on : .off
+            settings.flashMode = on ? .on : .off
             device.torchMode = on ? .on : .off
             
             device.unlockForConfiguration()

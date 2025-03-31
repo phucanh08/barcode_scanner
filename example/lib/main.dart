@@ -1,7 +1,6 @@
-import 'package:barcode_scanner/gen/protos/protos.pb.dart';
-import 'package:barcode_scanner/model/model.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter/cupertino.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:barcode_scanner/barcode_scanner.dart';
 
 void main() {
@@ -28,7 +27,33 @@ class _MyAppState extends State<MyApp> {
         extendBodyBehindAppBar: true,
         extendBody: true,
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: const Text(
+            'Plugin example app',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          child: CupertinoButton(
+            child: const Icon(
+              CupertinoIcons.photo,
+              color: Colors.white,
+            ),
+            onPressed: () async {
+              BarcodeScanner().pauseCamera();
+              final image = await ImagePicker()
+                  .pickImage(source: ImageSource.gallery);
+              if (image != null) {
+                final results = await BarcodeScanner()
+                    .detectBarcodesByImagePath(image.path);
+                for (var e in results ?? []) {
+                  debugPrint("Mã vạch phát hiện: $e");
+                }
+              }
+              BarcodeScanner().resumeCamera();
+            },
+          ),
         ),
         body: BarcodeScannerView(
           options: const ScanOptions(
@@ -36,11 +61,11 @@ class _MyAppState extends State<MyApp> {
               BarcodeFormat.qr,
               BarcodeFormat.pdf417,
             ],
-            android: AndroidOptions(useAutoFocus: false)
+            android: AndroidOptions(useAutoFocus: false),
             // strings: {},
           ),
           onData: (data) {
-            print('Barcode data: ${data.rawContent}');
+            debugPrint('Barcode data: ${data.rawContent}');
           },
         ),
       ),

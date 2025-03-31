@@ -1,17 +1,21 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-
 import 'barcode_scanner_platform_interface.dart';
 
 /// An implementation of [BarcodeScannerPlatform] that uses method channels.
 class MethodChannelBarcodeScanner extends BarcodeScannerPlatform {
-  /// The method channel used to interact with the native platform.
-  @visibleForTesting
-  final methodChannel = const MethodChannel('barcode_scanner');
+  @override
+  Future<List<String>?> detectBarcodesByImagePath(String imagePath) async {
+    final result = await methodChannel?.invokeMethod<List<dynamic>>(
+        'detectBarcodesByImagePath', imagePath);
+    return result?.cast<String>();
+  }
 
   @override
-  Future<String?> getPlatformVersion() async {
-    final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
+  void pauseCamera() {
+    methodChannel?.invokeMethod('pauseCamera');
+  }
+
+  @override
+  void resumeCamera() {
+    methodChannel?.invokeMethod('resumeCamera');
   }
 }

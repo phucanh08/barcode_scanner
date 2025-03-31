@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'barcode_scanner_platform_interface.dart';
 import 'model/scan_options.dart';
 import 'model/scan_result.dart';
 
@@ -14,11 +15,11 @@ import 'gen/protos/protos.pb.dart' as proto;
 
 class BarcodeScannerView extends StatefulWidget {
   const BarcodeScannerView({
-    super.key,
+    Key? key,
     this.onData,
     this.onError,
     required this.options,
-  });
+  }) : super(key: key);
 
   final void Function(ScanResult)? onData;
   final void Function(String)? onError;
@@ -32,6 +33,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
   StreamSubscription? streamSubscription;
 
   void onPlatformViewCreated(int platformViewId) {
+    BarcodeScannerPlatform.instance.init(platformViewId);
     final eventChannel =
         EventChannel('flutter_barcode_scanner_$platformViewId');
     streamSubscription = eventChannel.receiveBroadcastStream().listen((event) {
@@ -46,7 +48,9 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
           ));
         }
       } catch (e) {
-        print('Error receiving event: $e');
+        if (kDebugMode) {
+          print('Error receiving event: $e');
+        }
         widget.onError?.call(e.toString());
       }
     });
