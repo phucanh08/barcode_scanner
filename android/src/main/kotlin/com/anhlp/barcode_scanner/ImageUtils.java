@@ -6,9 +6,12 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.media.ExifInterface;
+
+import java.io.IOException;
 
 public class ImageUtils {
-    static public Bitmap toGrayscale(Bitmap bmpOriginal)
+    public static  Bitmap toGrayscale(Bitmap bmpOriginal)
     {
         int width, height;
         height = bmpOriginal.getHeight();
@@ -25,7 +28,7 @@ public class ImageUtils {
         return bmpGrayscale;
     }
 
-    static public Bitmap resizeScale(Bitmap bitmap, int maxSize) {
+    public static  Bitmap resizeScale(Bitmap bitmap, int maxSize) {
         float scale = Math.min(((float)maxSize / bitmap.getWidth()), ((float)maxSize / bitmap.getHeight()));
 
         Matrix matrix = new Matrix();
@@ -33,5 +36,32 @@ public class ImageUtils {
 
         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
         return bitmap;
+    }
+
+    public static Bitmap rotateImageIfRequired(Bitmap bitmap, String imagePath) {
+        try {
+            ExifInterface exif = new ExifInterface(imagePath);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    return rotateImage(bitmap, 90f);
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    return rotateImage(bitmap, 180f);
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    return rotateImage(bitmap, 270f);
+                default:
+                    return bitmap;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return bitmap;
+        }
+    }
+
+    private static Bitmap rotateImage(Bitmap bitmap, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 }

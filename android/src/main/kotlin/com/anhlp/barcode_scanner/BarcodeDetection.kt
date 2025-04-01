@@ -76,8 +76,6 @@ class BarcodeDetection(
         if (image == null) {
             imageProxy.close()
         }
-        val width = imageProxy.width
-        val height = imageProxy.height
         val inputImage =
             com.google.mlkit.vision.common.InputImage.fromMediaImage(
                 image!!,
@@ -86,7 +84,7 @@ class BarcodeDetection(
         mlKitBarcodeScanner.process(inputImage).addOnSuccessListener {
             if (it.isNotEmpty()) {
                 timeMlKit = SystemClock.uptimeMillis()
-                handleMlKitResult(it[0], width, height)
+                handleMlKitResult(it[0], imageProxy.toBitmap())
             }
         }.addOnCompleteListener {
             imageProxy.close()
@@ -107,11 +105,13 @@ class BarcodeDetection(
         try {
             val rawResult = mMultiFormatReader?.decodeWithState(binaryBitmap)
                 ?: mMultiFormatReader?.decodeWithState(BinaryBitmap(HybridBinarizer(source.invert())))
-            handleResult(rawResult, width, height)
+            handleResult(rawResult, bitmap)
             if (rawResult != null) {
                 return rawResult
             } else {
-                controllerDelegate.didUpdateBoundingBoxOverlay(null, width, height)
+                CoroutineScope(Dispatchers.Main).launch {
+                    controllerDelegate.didUpdateBoundingBoxOverlay(null)
+                }
                 controllerDelegate.didFailWithErrorCode(
                     "NOT_FOUND",
                     "No barcode found in the image",
@@ -119,14 +119,18 @@ class BarcodeDetection(
                 )
             }
         } catch (_: NotFoundException) {
-            controllerDelegate.didUpdateBoundingBoxOverlay(null, width, height)
+            CoroutineScope(Dispatchers.Main).launch {
+                controllerDelegate.didUpdateBoundingBoxOverlay(null)
+            }
             controllerDelegate.didFailWithErrorCode(
                 "NOT_FOUND",
                 "No barcode found in the image",
                 null
             )
         } catch (e: Exception) {
-            controllerDelegate.didUpdateBoundingBoxOverlay(null, width, height)
+            CoroutineScope(Dispatchers.Main).launch {
+                controllerDelegate.didUpdateBoundingBoxOverlay(null)
+            }
             controllerDelegate.didFailWithErrorCode(
                 "SCAN_ERROR",
                 "An error occurred while scanning the barcode: ${e.message}",
@@ -140,12 +144,14 @@ class BarcodeDetection(
     }
 
     private fun handleMlKitResult(
-        result: com.google.mlkit.vision.barcode.common.Barcode?, imageWidth: Int, imageHeight: Int
+        result: com.google.mlkit.vision.barcode.common.Barcode?, bitmap: Bitmap
     ) {
         result?.boundingBox?.toRectF()
-        controllerDelegate.didUpdateBoundingBoxOverlay(
-            result?.boundingBox?.toRectF(), imageWidth, imageHeight
-        )
+        CoroutineScope(Dispatchers.Main).launch {
+            controllerDelegate.didUpdateBoundingBoxOverlay(
+                result?.boundingBox?.toRectF(), bitmap
+            )
+        }
 
         val builder = Protos.ScanResult.newBuilder()
         if (result == null) {
@@ -170,7 +176,7 @@ class BarcodeDetection(
 
     }
 
-    private fun handleResult(result: Result?, imageWidth: Int, imageHeight: Int) {
+    private fun handleResult(result: Result?, bitmap: Bitmap) {
         val boundingBox =
             result?.resultPoints?.filterNotNull()?.takeIf { it.size >= 4 }?.let { points ->
                 val xs = points.map { it.x }
@@ -183,8 +189,9 @@ class BarcodeDetection(
                 )
             }
 
-        controllerDelegate.didUpdateBoundingBoxOverlay(boundingBox, imageWidth, imageHeight)
-
+        CoroutineScope(Dispatchers.Main).launch {
+            controllerDelegate.didUpdateBoundingBoxOverlay(boundingBox, bitmap)
+        }
 
         val builder = Protos.ScanResult.newBuilder()
         if (result == null) {
@@ -215,8 +222,6 @@ class BarcodeDetection(
     }
 
     companion object {
-        private const val TAG = "BarcodeDetection"
-
         internal val zxingFormatMap: Map<Protos.BarcodeFormat, BarcodeFormat> = mapOf(
             Protos.BarcodeFormat.aztec to BarcodeFormat.AZTEC,
             Protos.BarcodeFormat.code39 to BarcodeFormat.CODE_39,
@@ -248,7 +253,7 @@ class BarcodeDetection(
 }
 
 interface BarcodeScannerViewControllerDelegate {
-    fun didUpdateBoundingBoxOverlay(rect: RectF?, imageWidth: Int = 1, imageHeight: Int = 1)
+    fun didUpdateBoundingBoxOverlay(rect: RectF?, bitmap: Bitmap? = null)
 
     fun didScanBarcodeWithResult(scanResult: Protos.ScanResult)
 

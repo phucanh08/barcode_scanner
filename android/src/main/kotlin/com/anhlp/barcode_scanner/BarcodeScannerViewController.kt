@@ -2,9 +2,13 @@ package com.anhlp.barcode_scanner
 
 import android.content.Context
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.Size
+import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageAnalysis.Analyzer
@@ -30,6 +34,7 @@ class BarcodeScannerViewController(private val context: Context, private val ana
         ) as WindowManager).defaultDisplay.rotation
     private val previewUseCase: Preview
     val previewView: PreviewView = PreviewView(context)
+    var isPauseCamera = false
 
     init {
         previewUseCase = Preview.Builder()
@@ -64,18 +69,23 @@ class BarcodeScannerViewController(private val context: Context, private val ana
     }
 
     fun pauseCameraPreview() {
-        cameraProvider?.unbindAll()
+        if(isPauseCamera) return
+        isPauseCamera = true
+//        Handler(Looper.getMainLooper()).postDelayed({
+//            cameraProvider?.unbindAll()
+//        }, 100)
     }
 
     fun resumeCameraPreview() {
-        val lifecycleOwner = getLifecycleOwner()
-        if (lifecycleOwner == null) return
-        cameraProvider?.bindToLifecycle(
-            lifecycleOwner,
-            cameraSelector,
-            previewUseCase,
-            imageAnalyzer
-        )
+//        val lifecycleOwner = getLifecycleOwner()
+//        if (lifecycleOwner == null) return
+//        cameraProvider?.bindToLifecycle(
+//            lifecycleOwner,
+//            cameraSelector,
+//            previewUseCase,
+//            imageAnalyzer
+//        )
+        isPauseCamera = false
     }
 
     private fun bindCameraUseCases(lifecycleOwner: LifecycleOwner) {

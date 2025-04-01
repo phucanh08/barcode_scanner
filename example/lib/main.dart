@@ -52,9 +52,29 @@ class _MyAppState extends State<MyApp> {
                   for (var e in results ?? []) {
                     debugPrint("Mã vạch phát hiện: $e");
                   }
+                } else {
+                  BarcodeScanner().resumeCamera();
                 }
-              } finally {
-                BarcodeScanner().resumeCamera();
+              } catch (e) {
+                if (context.mounted) {
+                  showCupertinoDialog(
+                    context: context,
+                    builder: (context) {
+                      return CupertinoAlertDialog(
+                        title: const Text('Đã có lỗi xảy ra'),
+                        content: Text('An error occurred: $e'),
+                        actions: [
+                          CupertinoButton(
+                            child: const Text('OK'),
+                            onPressed: () {
+                              BarcodeScanner().resumeCamera();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
               }
             },
           ),
