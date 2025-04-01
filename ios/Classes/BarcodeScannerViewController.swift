@@ -4,19 +4,10 @@ import MTBBarcodeScanner
 class BarcodeScannerViewController: UIViewController {
     private var overlayViews = [String: UIView]()
     private var previewView: UIView?
-    private var scanRect: ScannerOverlay?
     private var scanner: MTBBarcodeScanner?
     private var isFreezeCapture: Bool = false
     
-    var config: Configuration = Configuration.with {
-        $0.strings = [
-            "cancel" : "Cancel",
-            "flash_on" : "Flash on",
-            "flash_off" : "Flash off",
-        ]
-        $0.useCamera = -1 // Default camera
-        $0.autoEnableFlash = false
-    }
+    var config: Configuration = Configuration()
     
     private let formatMap = [
         BarcodeFormat.aztec : AVMetadataObject.ObjectType.aztec,
@@ -70,7 +61,6 @@ class BarcodeScannerViewController: UIViewController {
             previewView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             view.addSubview(previewView)
         }
-        setupScanRect(view.bounds)
         
         let restrictedBarcodeTypes = mapRestrictedBarcodeTypes()
         if restrictedBarcodeTypes.isEmpty {
@@ -80,12 +70,6 @@ class BarcodeScannerViewController: UIViewController {
                                         previewView: previewView
             )
         }
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: config.strings["cancel"],
-                                                           style: .plain,
-                                                           target: self,
-                                                           action: #selector(cancel)
-        )
-        updateToggleFlashButton()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -96,8 +80,7 @@ class BarcodeScannerViewController: UIViewController {
         }
         
         UIDevice.current.endGeneratingDeviceOrientationNotifications()
-        
-        scanRect?.startAnimating()
+
         MTBBarcodeScanner.requestCameraPermission(success: { success in
             if success {
                 self.startScan()
@@ -111,7 +94,6 @@ class BarcodeScannerViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         scanner?.stopScanning()
-        scanRect?.stopAnimating()
         
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         
@@ -124,23 +106,6 @@ class BarcodeScannerViewController: UIViewController {
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        setupScanRect(CGRect(origin: CGPoint(x: 0, y:0),
-                             size: size
-                            ))
-    }
-    
-    private func setupScanRect(_ bounds: CGRect) {
-        if scanRect != nil {
-            scanRect?.stopAnimating()
-            scanRect?.removeFromSuperview()
-        }
-        scanRect = ScannerOverlay(frame: bounds)
-        if let scanRect = scanRect {
-            scanRect.translatesAutoresizingMaskIntoConstraints = false
-            scanRect.backgroundColor = UIColor.clear
-            view.addSubview(scanRect)
-            scanRect.startAnimating()
-        }
     }
     
     private func startScan() {
@@ -160,11 +125,6 @@ class BarcodeScannerViewController: UIViewController {
                     self.scanResult(scanResult)
                 }
             })
-            if(config.autoEnableFlash){
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                    self.setFlashState(true)
-                }
-            }
         } catch {
             self.scanResult(ScanResult.with {
                 $0.type = .error
@@ -245,19 +205,6 @@ class BarcodeScannerViewController: UIViewController {
         setFlashState(!isFlashOn)
     }
     
-    private func updateToggleFlashButton() {
-        if !hasTorch {
-            return
-        }
-        
-        let buttonText = isFlashOn ? config.strings["flash_off"] : config.strings["flash_on"]
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: buttonText,
-                                                            style: .plain,
-                                                            target: self,
-                                                            action: #selector(onToggleFlash)
-        )
-    }
-    
     private func setFlashState(_ on: Bool) {
         if let device = device {
             guard device.hasFlash && device.hasTorch else {
@@ -275,7 +222,6 @@ class BarcodeScannerViewController: UIViewController {
             device.torchMode = on ? .on : .off
             
             device.unlockForConfiguration()
-            updateToggleFlashButton()
         }
     }
     
@@ -302,6 +248,6 @@ class BarcodeScannerViewController: UIViewController {
     }
     
     private var cameraFromConfig: MTBCamera {
-        return config.useCamera == 1 ? .front : .back
+        return .back
     }
 }
