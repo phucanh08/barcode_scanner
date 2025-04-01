@@ -35,7 +35,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
   void onPlatformViewCreated(int platformViewId) {
     BarcodeScannerPlatform.instance.init(platformViewId);
     final eventChannel =
-        EventChannel('flutter_barcode_scanner_$platformViewId');
+        EventChannel('com.anhlp.barcode_scanner/events_$platformViewId');
     streamSubscription = eventChannel.receiveBroadcastStream().listen((event) {
       try {
         if (event != null) {

@@ -28,7 +28,7 @@ abstract class BarcodeScannerPlatform extends PlatformInterface {
   MethodChannel? methodChannel;
 
   void init(int platformViewId) {
-    methodChannel = MethodChannel('barcode_scanner_$platformViewId');
+    methodChannel = MethodChannel('com.anhlp.barcode_scanner/methods_$platformViewId');
   }
 
   Future<List<String>?> detectBarcodesByImagePath(String imagePath) {

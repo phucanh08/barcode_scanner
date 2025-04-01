@@ -2,26 +2,30 @@ package com.anhlp.barcode_scanner
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Rect
-import android.os.Build
+import android.graphics.PointF
+import android.os.Handler
+import android.os.Looper
 import android.view.View
-import androidx.annotation.RequiresApi
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.Result
+import com.google.zxing.ResultPoint
 import io.flutter.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
-import io.flutter.plugin.platform.PlatformView
-
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.StandardMessageCodec
+import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 
+
 class BarcodeScannerViewFactory(private val binaryMessenger: BinaryMessenger) :
     PlatformViewFactory(StandardMessageCodec.INSTANCE) {
-    @RequiresApi(Build.VERSION_CODES.M)
+
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
-        return BarcodeScannerView(binaryMessenger, context, viewId, args)
+        return BarcodeScannerView2(binaryMessenger, context, viewId, args)
     }
 }
 
@@ -30,7 +34,7 @@ internal class BarcodeScannerView(
     context: Context,
     id: Int,
     creationParams: Any?
-) : PlatformView, ZXingScannerView.ResultHandler {
+) : PlatformView, ZXingScannerView.ResultHandler, MethodCallHandler {
     private val eventChannelHandler: EventChannelHandler = EventChannelHandler()
     private var config: Protos.Configuration
     private val scannerView: ZXingAutofocusScannerView
@@ -41,10 +45,13 @@ internal class BarcodeScannerView(
         )
         setBackgroundColor(Color.WHITE)
     }
+    private val boundingBoxOverlay: BoundingBoxOverlay
 
     init {
-        val methodChannel = EventChannel(binaryMessenger, "com.anhlp.barcode_scanner/methods_$id")
-        methodChannel.setStreamHandler(eventChannelHandler)
+        val methodChannel = MethodChannel(binaryMessenger, "com.anhlp.barcode_scanner/methods_$id")
+        methodChannel.setMethodCallHandler(this)
+        val eventChannel = EventChannel(binaryMessenger, "com.anhlp.barcode_scanner/events_$id")
+        eventChannel.setStreamHandler(eventChannelHandler)
         config = Protos.Configuration.parseFrom(creationParams as ByteArray)
         scannerView = ZXingAutofocusScannerView(context).apply {
             setAutoFocus(config.android.useAutoFocus)
@@ -59,6 +66,8 @@ internal class BarcodeScannerView(
             }
         }
         container.addView(scannerView)
+        boundingBoxOverlay = BoundingBoxOverlay(context)
+        container.addView(boundingBoxOverlay)
         scannerView.setResultHandler(this)
         if (config.useCamera > -1) {
             scannerView.startCamera(config.useCamera)
@@ -76,12 +85,22 @@ internal class BarcodeScannerView(
         scannerView.stopCamera()
     }
 
+    private fun makeAbsolute(
+        points: Array<ResultPoint>?,
+        leftOffset: Int,
+        topOffset: Int
+    ): List<PointF> {
+        return points?.filterNotNull()?.map { PointF(it.x + leftOffset, it.y + topOffset) }
+            ?: emptyList();
+    }
+
     override fun handleResult(result: Result?) {
         Log.d("BarcodeScannerView", "Scanned result: $result")
 
 
         val builder = Protos.ScanResult.newBuilder()
         if (result == null) {
+            boundingBoxOverlay.setBoundingBox(emptyList())
 
             builder.let {
                 it.format = Protos.BarcodeFormat.unknown
@@ -89,6 +108,14 @@ internal class BarcodeScannerView(
                 it.type = Protos.ResultType.Error
             }
         } else {
+            val data = makeAbsolute(
+                result.resultPoints,
+                scannerView.rect?.left ?: 0,
+                scannerView.rect?.top ?: 0
+            )
+            boundingBoxOverlay.setBoundingBox(data)
+
+
             val format = (formatMap.filterValues { it == result.barcodeFormat }.keys.firstOrNull()
                 ?: Protos.BarcodeFormat.unknown)
 
@@ -105,7 +132,7 @@ internal class BarcodeScannerView(
             }
         }
         val res = builder.build()
-        eventChannelHandler.eventSink?.success(res.toByteArray())
+        eventChannelHandler.success(res.toByteArray())
     }
 
     private fun mapRestrictedBarcodeTypes(): List<BarcodeFormat> {
@@ -123,8 +150,33 @@ internal class BarcodeScannerView(
         return types
     }
 
+    override fun onMethodCall(
+        call: MethodCall,
+        result: MethodChannel.Result
+    ) {
+        when (call.method) {
+            "detectBarcodesByImagePath" -> {
+                return scannerView.detectBarcodesByImagePath(call.arguments as String, result)
+            }
+
+            "pauseCamera" -> {
+                scannerView.stopCameraPreview()
+                return result.success(null)
+            }
+
+            "resumeCamera" -> {
+                scannerView.resumeCameraPreview()
+                return result.success(null)
+            }
+
+            else -> {
+                result.notImplemented()
+            }
+        }
+    }
+
     companion object {
-        private val formatMap: Map<Protos.BarcodeFormat, BarcodeFormat> = mapOf(
+        internal val formatMap: Map<Protos.BarcodeFormat, BarcodeFormat> = mapOf(
             Protos.BarcodeFormat.aztec to BarcodeFormat.AZTEC,
             Protos.BarcodeFormat.code39 to BarcodeFormat.CODE_39,
             Protos.BarcodeFormat.code93 to BarcodeFormat.CODE_93,
@@ -137,12 +189,20 @@ internal class BarcodeScannerView(
             Protos.BarcodeFormat.qr to BarcodeFormat.QR_CODE,
             Protos.BarcodeFormat.upce to BarcodeFormat.UPC_E
         )
-
     }
 }
 
-class EventChannelHandler : EventChannel.StreamHandler {
-    var eventSink: EventChannel.EventSink? = null
+open class EventChannelHandler : EventChannel.StreamHandler {
+    private var eventSink: EventChannel.EventSink? = null
+    private val handler = Handler(Looper.getMainLooper())
+
+    open fun success(event: Any?) {
+        handler.post { eventSink?.success(event) }
+    }
+
+    open fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
+        handler.post { eventSink?.success(eventSink?.error(errorCode, errorMessage, errorDetails)) }
+    }
 
 
     override fun onListen(

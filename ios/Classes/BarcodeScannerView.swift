@@ -44,8 +44,8 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
         _view = UIView()
         scannerViewController = BarcodeScannerViewController()
         eventChannelHandler = EventChannelHandler()
-        methodChannel = FlutterMethodChannel(name: "barcode_scanner_\(viewId)", binaryMessenger: messenger)
-        eventChannel = FlutterEventChannel(name: "flutter_barcode_scanner_\(viewId)", binaryMessenger: messenger)
+        methodChannel = FlutterMethodChannel(name: "com.anhlp.barcode_scanner/methods_\(viewId)", binaryMessenger: messenger)
+        eventChannel = FlutterEventChannel(name: "com.anhlp.barcode_scanner/events_\(viewId)", binaryMessenger: messenger)
         super.init()
         methodChannel.setMethodCallHandler (self.methodChanelHandler)
         eventChannel.setStreamHandler(eventChannelHandler)
@@ -89,14 +89,14 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
         // 2. Tải hình ảnh từ URL
         guard let image = UIImage(contentsOfFile: fileURL.path) else {
             print("Không thể tải hình ảnh từ đường dẫn: \(path)")
-            result(FlutterError(code: "Invalid image path", message: "Không thể tải hình ảnh từ đường dẫn: \(path)", details: nil))
+            result(FlutterError(code: "INVALID_IMAGE", message: "Không thể tải hình ảnh từ đường dẫn: \(path)", details: nil))
             return
         }
         
         // 3. Chuyển đổi UIImage thành CIImage
         guard let ciImage = CIImage(image: image) else {
             print("Không thể tạo CIImage từ UIImage.")
-            result(FlutterError(code: "Error when converting UIImage to CIImage", message: "Không thể tạo CIImage từ UIImage.", details: nil))
+            result(FlutterError(code: "SCAN_ERROR", message: "Không thể tạo CIImage từ UIImage.", details: nil))
             return
         }
         
@@ -104,12 +104,12 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
         let barcodeRequest = VNDetectBarcodesRequest { (request, error) in
             if let error = error {
                 print("Lỗi khi phát hiện mã vạch: \(error.localizedDescription)")
-                result(FlutterError(code: "Error when scanning barcodes", message:"Lỗi khi phát hiện mã vạch: \(error.localizedDescription)", details: nil))
+                result(FlutterError(code: "SCAN_ERROR", message:"Lỗi khi phát hiện mã vạch: \(error.localizedDescription)", details: nil))
                 return
             }
             guard let results = request.results as? [VNBarcodeObservation] else {
                 print("Không có mã vạch nào được phát hiện.")
-                result([])
+                result(FlutterError(code: "NO_BARCODE", message:"Không tìm thấy mã vạch trong ảnh", details: nil))
                 return
             }
             

@@ -28,6 +28,7 @@ class _MyAppState extends State<MyApp> {
         extendBody: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
+          centerTitle: true,
           elevation: 0,
           title: const Text(
             'Plugin example app',
@@ -41,17 +42,20 @@ class _MyAppState extends State<MyApp> {
               color: Colors.white,
             ),
             onPressed: () async {
-              BarcodeScanner().pauseCamera();
-              final image = await ImagePicker()
-                  .pickImage(source: ImageSource.gallery);
-              if (image != null) {
-                final results = await BarcodeScanner()
-                    .detectBarcodesByImagePath(image.path);
-                for (var e in results ?? []) {
-                  debugPrint("Mã vạch phát hiện: $e");
+              try {
+                BarcodeScanner().pauseCamera();
+                final image =
+                    await ImagePicker().pickImage(source: ImageSource.gallery);
+                if (image != null) {
+                  final results = await BarcodeScanner()
+                      .detectBarcodesByImagePath(image.path);
+                  for (var e in results ?? []) {
+                    debugPrint("Mã vạch phát hiện: $e");
+                  }
                 }
+              } finally {
+                BarcodeScanner().resumeCamera();
               }
-              BarcodeScanner().resumeCamera();
             },
           ),
         ),

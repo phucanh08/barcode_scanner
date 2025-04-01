@@ -29,7 +29,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Camera permission is required for barcode scanning.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-    <string>Used to demonstrate image picker plugin</string>
+	<string>Used to demonstrate image picker plugin</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
