@@ -2,19 +2,6 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-purple.svg)](https://opensource.org/licenses/MIT)
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/to/develop-plugins),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
 ## Requirements
 
 ### iOS
@@ -22,13 +9,21 @@ samples, guidance on mobile development, and a full API reference.
 - Minimum iOS Deployment Target: 12
 - Xcode 15.3.0 or newer
 - Swift 5
-- ML Kit does not support 32-bit architectures (i386 and armv7). ML Kit does support 64-bit architectures (x86_64 and arm64). Check this [list](https://developer.apple.com/support/required-device-capabilities/) to see if your device has the required device capabilities. More info [here](https://developers.google.com/ml-kit/migration/ios).
+
+Add the following keys to your _Info.plist_ file, located in
+`<project root>/ios/Runner/Info.plist`:
+
+* `NSCameraUsageDescription` - describe why your app needs access to the camera.
+  This is called _Privacy - Camera Usage Description_ in the visual editor.
 
 ### Android
 
-- minSdkVersion: 21
+- minSdkVersion: 24
 - targetSdkVersion: 35
 - compileSdkVersion: 35
+
+For Android, you must do the following before you can use the plugin:
+* Add the camera permission to your AndroidManifest.xml
 
 ## Usage
 
