@@ -1,6 +1,34 @@
 #!/bin/sh
 PROTO_OUT_FILE="./protos/protos.proto"
 
+# Check if protoc is installed
+if ! command -v protoc &> /dev/null; then
+  echo "Error: protoc is not installed or not in PATH"
+  echo "Please install Protocol Buffers compiler:"
+  echo "  - macOS: brew install protobuf"
+  echo "  - Ubuntu/Debian: apt-get install protobuf-compiler"
+  echo "  - Or download from: https://github.com/protocolbuffers/protobuf/releases"
+  exit 1
+fi
+
+# Check if protoc-gen-swift is installed
+if ! command -v protoc-gen-swift &> /dev/null; then
+  echo "Error: protoc-gen-swift is not installed or not in PATH"
+  echo "Please install Swift Protocol Buffers plugin:"
+  echo "  brew install swift-protobuf"
+  echo "  Or follow instructions at: https://github.com/apple/swift-protobuf"
+  exit 1
+fi
+
+# Check if protoc-gen-dart is installed
+if ! command -v protoc-gen-dart &> /dev/null; then
+  echo "Error: protoc-gen-dart is not installed or not in PATH"
+  echo "Please install Protocol Buffers Dart plugin:"
+  echo "  dart pub global activate protoc_plugin"
+  echo "Then ensure \$HOME/.pub-cache/bin is in your PATH"
+  exit 1
+fi
+
 if [ -f "$PROTO_OUT_FILE" ]; then
   echo "Deleting old $PROTO_OUT_FILE"
   rm "$PROTO_OUT_FILE";

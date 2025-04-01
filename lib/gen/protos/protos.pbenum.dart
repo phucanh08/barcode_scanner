@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: protos/protos.proto
 //
-// @dart = 2.12
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names, library_prefixes
@@ -46,7 +46,7 @@ class BarcodeFormat extends $pb.ProtobufEnum {
   static final $core.Map<$core.int, BarcodeFormat> _byValue = $pb.ProtobufEnum.initByValue(values);
   static BarcodeFormat? valueOf($core.int value) => _byValue[value];
 
-  const BarcodeFormat._($core.int v, $core.String n) : super(v, n);
+  const BarcodeFormat._(super.v, super.n);
 }
 
 /// protos/scan_result.proto
@@ -64,7 +64,7 @@ class ResultType extends $pb.ProtobufEnum {
   static final $core.Map<$core.int, ResultType> _byValue = $pb.ProtobufEnum.initByValue(values);
   static ResultType? valueOf($core.int value) => _byValue[value];
 
-  const ResultType._($core.int v, $core.String n) : super(v, n);
+  const ResultType._(super.v, super.n);
 }
 
 

@@ -83,7 +83,7 @@ class BarcodeScannerViewController(private val context: Context, private val ana
             val resolutionSelector = ResolutionSelector.Builder()
                 .setResolutionStrategy(
                     ResolutionStrategy(
-                        Size(1280, 720),
+                        Size(1920, 1080),
                         ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
                     )
                 )

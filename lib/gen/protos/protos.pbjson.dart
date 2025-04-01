@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: protos/protos.proto
 //
-// @dart = 2.12
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names, library_prefixes
@@ -52,53 +52,18 @@ const ResultType$json = {
 final $typed_data.Uint8List resultTypeDescriptor = $convert.base64Decode(
     'CgpSZXN1bHRUeXBlEgsKB0JhcmNvZGUQABINCglDYW5jZWxsZWQQARIJCgVFcnJvchAC');
 
-@$core.Deprecated('Use androidConfigurationDescriptor instead')
-const AndroidConfiguration$json = {
-  '1': 'AndroidConfiguration',
-  '2': [
-    {'1': 'aspectTolerance', '3': 1, '4': 1, '5': 1, '10': 'aspectTolerance'},
-    {'1': 'useAutoFocus', '3': 2, '4': 1, '5': 8, '10': 'useAutoFocus'},
-    {'1': 'appBarTitle', '3': 3, '4': 1, '5': 9, '10': 'appBarTitle'},
-  ],
-};
-
-/// Descriptor for `AndroidConfiguration`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List androidConfigurationDescriptor = $convert.base64Decode(
-    'ChRBbmRyb2lkQ29uZmlndXJhdGlvbhIoCg9hc3BlY3RUb2xlcmFuY2UYASABKAFSD2FzcGVjdF'
-    'RvbGVyYW5jZRIiCgx1c2VBdXRvRm9jdXMYAiABKAhSDHVzZUF1dG9Gb2N1cxIgCgthcHBCYXJU'
-    'aXRsZRgDIAEoCVILYXBwQmFyVGl0bGU=');
-
 @$core.Deprecated('Use configurationDescriptor instead')
 const Configuration$json = {
   '1': 'Configuration',
   '2': [
-    {'1': 'strings', '3': 1, '4': 3, '5': 11, '6': '.Configuration.StringsEntry', '10': 'strings'},
-    {'1': 'restrictFormat', '3': 2, '4': 3, '5': 14, '6': '.BarcodeFormat', '10': 'restrictFormat'},
-    {'1': 'useCamera', '3': 3, '4': 1, '5': 5, '10': 'useCamera'},
-    {'1': 'android', '3': 4, '4': 1, '5': 11, '6': '.AndroidConfiguration', '10': 'android'},
-    {'1': 'autoEnableFlash', '3': 5, '4': 1, '5': 8, '10': 'autoEnableFlash'},
+    {'1': 'restrictFormat', '3': 1, '4': 3, '5': 14, '6': '.BarcodeFormat', '10': 'restrictFormat'},
   ],
-  '3': [Configuration_StringsEntry$json],
-};
-
-@$core.Deprecated('Use configurationDescriptor instead')
-const Configuration_StringsEntry$json = {
-  '1': 'StringsEntry',
-  '2': [
-    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
-    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
-  ],
-  '7': {'7': true},
 };
 
 /// Descriptor for `Configuration`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List configurationDescriptor = $convert.base64Decode(
-    'Cg1Db25maWd1cmF0aW9uEjUKB3N0cmluZ3MYASADKAsyGy5Db25maWd1cmF0aW9uLlN0cmluZ3'
-    'NFbnRyeVIHc3RyaW5ncxI2Cg5yZXN0cmljdEZvcm1hdBgCIAMoDjIOLkJhcmNvZGVGb3JtYXRS'
-    'DnJlc3RyaWN0Rm9ybWF0EhwKCXVzZUNhbWVyYRgDIAEoBVIJdXNlQ2FtZXJhEi8KB2FuZHJvaW'
-    'QYBCABKAsyFS5BbmRyb2lkQ29uZmlndXJhdGlvblIHYW5kcm9pZBIoCg9hdXRvRW5hYmxlRmxh'
-    'c2gYBSABKAhSD2F1dG9FbmFibGVGbGFzaBo6CgxTdHJpbmdzRW50cnkSEAoDa2V5GAEgASgJUg'
-    'NrZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVlOgI4AQ==');
+    'Cg1Db25maWd1cmF0aW9uEjYKDnJlc3RyaWN0Rm9ybWF0GAEgAygOMg4uQmFyY29kZUZvcm1hdF'
+    'IOcmVzdHJpY3RGb3JtYXQ=');
 
 @$core.Deprecated('Use scanResultDescriptor instead')
 const ScanResult$json = {

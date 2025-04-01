@@ -65,8 +65,6 @@ class _MyAppState extends State<MyApp> {
               BarcodeFormat.qr,
               BarcodeFormat.pdf417,
             ],
-            android: AndroidOptions(useAutoFocus: false),
-            // strings: {},
           ),
           onData: (data) {
             debugPrint('Barcode data: ${data.rawContent}');
