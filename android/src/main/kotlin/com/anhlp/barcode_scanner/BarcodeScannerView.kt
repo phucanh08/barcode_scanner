@@ -109,7 +109,7 @@ internal class BarcodeScannerView(
                 }
 
                 val res = barcodeDetection.zxingProcess(bitmap)
-                val list = listOfNotNull(res)
+                val list = listOfNotNull(res?.text)
                 if (list.isEmpty()) {
                     result.error(
                         "NOT_FOUND",
@@ -134,6 +134,7 @@ internal class BarcodeScannerView(
 
     private fun resumeCameraPreview() {
         barcodeScannerViewController.resumeCameraPreview()
+        imageView.setImageResource(0)
         imageView.visibility = View.GONE
     }
 
