@@ -43,7 +43,9 @@ class BarcodeScannerViewController: UIViewController {
         isFreezeCapture = true
     }
     public func unfreezeCapture() {
-        self.previewView?.subviews.forEach { $0.removeFromSuperview() }
+        for (_, overlayView) in self.overlayViews {
+            overlayView.removeFromSuperview()
+        }
         self.scanner?.unfreezeCapture()
         isFreezeCapture = false
     }
