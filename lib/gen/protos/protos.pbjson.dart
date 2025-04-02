@@ -38,6 +38,33 @@ final $typed_data.Uint8List barcodeFormatDescriptor = $convert.base64Decode(
     'NvZGU5MxADEggKBGVhbjgQBBIJCgVlYW4xMxAFEgsKB2NvZGUxMjgQBhIOCgpkYXRhTWF0cml4'
     'EAcSBgoCcXIQCBITCg9pbnRlcmxlYXZlZDJvZjUQCRIICgR1cGNlEAoSCgoGcGRmNDE3EAs=');
 
+@$core.Deprecated('Use resolutionDescriptor instead')
+const Resolution$json = {
+  '1': 'Resolution',
+  '2': [
+    {'1': 'hd', '2': 0},
+    {'1': 'fullHd', '2': 1},
+  ],
+};
+
+/// Descriptor for `Resolution`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List resolutionDescriptor = $convert.base64Decode(
+    'CgpSZXNvbHV0aW9uEgYKAmhkEAASCgoGZnVsbEhkEAE=');
+
+@$core.Deprecated('Use cameraSelectionDescriptor instead')
+const CameraSelection$json = {
+  '1': 'CameraSelection',
+  '2': [
+    {'1': 'font', '2': 0},
+    {'1': 'back', '2': 1},
+    {'1': 'external', '2': 2},
+  ],
+};
+
+/// Descriptor for `CameraSelection`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List cameraSelectionDescriptor = $convert.base64Decode(
+    'Cg9DYW1lcmFTZWxlY3Rpb24SCAoEZm9udBAAEggKBGJhY2sQARIMCghleHRlcm5hbBAC');
+
 @$core.Deprecated('Use resultTypeDescriptor instead')
 const ResultType$json = {
   '1': 'ResultType',
@@ -52,18 +79,51 @@ const ResultType$json = {
 final $typed_data.Uint8List resultTypeDescriptor = $convert.base64Decode(
     'CgpSZXN1bHRUeXBlEgsKB0JhcmNvZGUQABINCglDYW5jZWxsZWQQARIJCgVFcnJvchAC');
 
+@$core.Deprecated('Use cameraSettingsDescriptor instead')
+const CameraSettings$json = {
+  '1': 'CameraSettings',
+  '2': [
+    {'1': 'resolution', '3': 1, '4': 1, '5': 14, '6': '.Resolution', '10': 'resolution'},
+    {'1': 'cameraSelection', '3': 2, '4': 1, '5': 14, '6': '.CameraSelection', '10': 'cameraSelection'},
+  ],
+};
+
+/// Descriptor for `CameraSettings`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cameraSettingsDescriptor = $convert.base64Decode(
+    'Cg5DYW1lcmFTZXR0aW5ncxIrCgpyZXNvbHV0aW9uGAEgASgOMgsuUmVzb2x1dGlvblIKcmVzb2'
+    'x1dGlvbhI6Cg9jYW1lcmFTZWxlY3Rpb24YAiABKA4yEC5DYW1lcmFTZWxlY3Rpb25SD2NhbWVy'
+    'YVNlbGVjdGlvbg==');
+
 @$core.Deprecated('Use configurationDescriptor instead')
 const Configuration$json = {
   '1': 'Configuration',
   '2': [
-    {'1': 'restrictFormat', '3': 1, '4': 3, '5': 14, '6': '.BarcodeFormat', '10': 'restrictFormat'},
+    {'1': 'barcodeFormats', '3': 1, '4': 3, '5': 14, '6': '.BarcodeFormat', '10': 'barcodeFormats'},
+    {'1': 'cameraSettings', '3': 2, '4': 1, '5': 11, '6': '.CameraSettings', '10': 'cameraSettings'},
+    {'1': 'resultSettings', '3': 3, '4': 1, '5': 11, '6': '.ResultSettings', '10': 'resultSettings'},
   ],
 };
 
 /// Descriptor for `Configuration`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List configurationDescriptor = $convert.base64Decode(
-    'Cg1Db25maWd1cmF0aW9uEjYKDnJlc3RyaWN0Rm9ybWF0GAEgAygOMg4uQmFyY29kZUZvcm1hdF'
-    'IOcmVzdHJpY3RGb3JtYXQ=');
+    'Cg1Db25maWd1cmF0aW9uEjYKDmJhcmNvZGVGb3JtYXRzGAEgAygOMg4uQmFyY29kZUZvcm1hdF'
+    'IOYmFyY29kZUZvcm1hdHMSNwoOY2FtZXJhU2V0dGluZ3MYAiABKAsyDy5DYW1lcmFTZXR0aW5n'
+    'c1IOY2FtZXJhU2V0dGluZ3MSNwoOcmVzdWx0U2V0dGluZ3MYAyABKAsyDy5SZXN1bHRTZXR0aW'
+    '5nc1IOcmVzdWx0U2V0dGluZ3M=');
+
+@$core.Deprecated('Use resultSettingsDescriptor instead')
+const ResultSettings$json = {
+  '1': 'ResultSettings',
+  '2': [
+    {'1': 'beepOnScan', '3': 1, '4': 1, '5': 8, '10': 'beepOnScan'},
+    {'1': 'vibrateOnScan', '3': 2, '4': 1, '5': 8, '10': 'vibrateOnScan'},
+  ],
+};
+
+/// Descriptor for `ResultSettings`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List resultSettingsDescriptor = $convert.base64Decode(
+    'Cg5SZXN1bHRTZXR0aW5ncxIeCgpiZWVwT25TY2FuGAEgASgIUgpiZWVwT25TY2FuEiQKDXZpYn'
+    'JhdGVPblNjYW4YAiABKAhSDXZpYnJhdGVPblNjYW4=');
 
 @$core.Deprecated('Use scanResultDescriptor instead')
 const ScanResult$json = {

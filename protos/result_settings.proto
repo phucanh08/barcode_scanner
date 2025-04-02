@@ -1,0 +1,10 @@
+syntax = "proto3";
+package com.anhlp.barcode_scanner;
+option java_package = "com.anhlp.barcode_scanner";
+
+message ResultSettings {
+    // Beep on Scan
+    bool beepOnScan = 1;
+    // Vibrate on Scan
+    bool vibrateOnScan = 2;
+}

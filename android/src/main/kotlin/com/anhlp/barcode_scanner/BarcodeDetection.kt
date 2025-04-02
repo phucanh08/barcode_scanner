@@ -13,12 +13,12 @@ import kotlinx.coroutines.*
 
 class BarcodeDetection(
     private val controllerDelegate: BarcodeScannerViewControllerDelegate,
-    restrictFormatList: List<Protos.BarcodeFormat>
+    barcodeFormats: List<Protos.BarcodeFormat>
 ) {
     private lateinit var mlKitBarcodeScanner: BarcodeScanner
     private var mMultiFormatReader: MultiFormatReader? = null
-    private var mZxingFormats = restrictFormatList.map { zxingFormatMap[it] as BarcodeFormat }
-    private var mMlKitFormats = restrictFormatList.mapNotNull { mlKitFormatMap[it] }
+    private var mZxingFormats = barcodeFormats.map { zxingFormatMap[it] as BarcodeFormat }
+    private var mMlKitFormats = barcodeFormats.mapNotNull { mlKitFormatMap[it] }
     private var coroutineScope = CoroutineScope(Dispatchers.IO)
     private var isZxingProcessing = false
 

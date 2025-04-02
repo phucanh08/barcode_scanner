@@ -1,6 +1,5 @@
 package com.anhlp.barcode_scanner
 
-import android.R.attr.scaleX
 import android.content.Context
 import android.graphics.*
 import android.os.*
@@ -41,6 +40,7 @@ internal class BarcodeScannerView(
         val eventChannel = EventChannel(binaryMessenger, "com.anhlp.barcode_scanner/events_$id")
         eventChannel.setStreamHandler(eventChannelHandler)
         config = Protos.Configuration.parseFrom(creationParams as ByteArray)
+        config.cameraSettings.cameraSelection
         barcodeScannerViewController =
             BarcodeScannerViewController(context, this::detectLiveStreamFrame)
         container.addView(barcodeScannerViewController.previewView)
@@ -55,7 +55,7 @@ internal class BarcodeScannerView(
         container.addView(imageView)
         boundingBoxOverlay = BoundingBoxOverlay(context)
         container.addView(boundingBoxOverlay)
-        barcodeDetection = BarcodeDetection(this, config.restrictFormatList.filterNotNull())
+        barcodeDetection = BarcodeDetection(this, config.barcodeFormatsList.filterNotNull())
     }
 
     override fun getView(): View {
@@ -78,11 +78,11 @@ internal class BarcodeScannerView(
             )
 
             "pauseCamera" -> {
-                val isPauseCamera = barcodeScannerViewController.pauseCameraPreview()
+                val isPauseCamera = pauseCameraPreview()
                 result.success(isPauseCamera)
             }
             "resumeCamera" -> {
-                val isResumeCamera = barcodeScannerViewController.resumeCameraPreview()
+                val isResumeCamera = resumeCameraPreview()
                 result.success(isResumeCamera)
             }
             "isFlashOn" -> {

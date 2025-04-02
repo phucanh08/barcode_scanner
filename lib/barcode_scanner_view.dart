@@ -65,7 +65,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
   @override
   Widget build(BuildContext context) {
     final config = proto.Configuration()
-      ..restrictFormat.addAll(widget.options.restrictFormat);
+      ..barcodeFormats.addAll(widget.options.restrictFormat);
     const viewType = 'barcode_scanner_view';
     const hitTestBehavior = PlatformViewHitTestBehavior.opaque;
     const layoutDirection = TextDirection.ltr;

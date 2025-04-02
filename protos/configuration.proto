@@ -1,8 +1,14 @@
 syntax = "proto3";
 package com.anhlp.barcode_scanner;
 import "barcode_format.proto";
+import "camera_settings.proto";
+import "result_settings.proto";
 
 message Configuration {
     // Restricts the barcode format which should be read
-    repeated BarcodeFormat restrictFormat = 1;
+    repeated BarcodeFormat barcodeFormats = 1;
+    // CameraSettings
+    CameraSettings cameraSettings = 2;
+    // ResultSettings
+    ResultSettings resultSettings = 3;
 }

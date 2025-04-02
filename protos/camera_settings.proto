@@ -1,0 +1,21 @@
+syntax = "proto3";
+package com.anhlp.barcode_scanner;
+option java_package = "com.anhlp.barcode_scanner";
+
+enum Resolution {
+    hd = 0;
+    fullHd = 1;
+}
+
+enum CameraSelection {
+    font = 0;
+    back = 1;
+    external = 2;
+}
+
+message CameraSettings {
+    // Resolution
+    Resolution resolution = 1;
+    // Camera Selection
+    CameraSelection cameraSelection = 2;
+}

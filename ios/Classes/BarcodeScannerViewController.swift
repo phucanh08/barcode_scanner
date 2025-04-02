@@ -243,7 +243,7 @@ class BarcodeScannerViewController: UIViewController {
     private func mapRestrictedBarcodeTypes() -> [String] {
         var types: [AVMetadataObject.ObjectType] = []
         
-        config.restrictFormat.forEach({ format in
+        config.barcodeFormats.forEach({ format in
             if let mappedFormat = formatMap[format]{
                 types.append(mappedFormat)
             }
