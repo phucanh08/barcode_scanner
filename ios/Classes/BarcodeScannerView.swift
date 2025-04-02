@@ -78,6 +78,7 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
             break
         case "pauseCamera":
             self.scannerViewController.freezeCapture()
+            result(scannerViewController.isFreezeCapture)
             break;
         case "resumeCamera":
             DispatchQueue.main.async {
@@ -86,6 +87,16 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
                 self.imageView.isHidden = true
             }
             self.scannerViewController.unfreezeCapture()
+            result(!scannerViewController.isFreezeCapture)
+            break;
+        case "isFlashOn":
+            let isFlashOn = self.scannerViewController.isFlashOn
+            result(isFlashOn)
+            break;
+        case "toggleFlash":
+            self.scannerViewController.onToggleFlash()
+            let isFlashOn = self.scannerViewController.isFlashOn
+            result(isFlashOn)
             break;
         default:
             break

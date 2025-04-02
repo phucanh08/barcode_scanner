@@ -16,4 +16,12 @@ class BarcodeScanner {
   void resumeCamera() {
     BarcodeScannerPlatform.instance.resumeCamera();
   }
+
+  Future<bool> isFlashOn() {
+    return BarcodeScannerPlatform.instance.isFlashOn();
+  }
+
+  Future<bool> toggleFlash() {
+    return BarcodeScannerPlatform.instance.toggleFlash();
+  }
 }
