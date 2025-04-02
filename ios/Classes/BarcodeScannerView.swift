@@ -173,7 +173,7 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
         let height = boundingBox.height * imageSize.height * scale
 
         let boxView = UIView(frame: CGRect(x: x, y: y, width: width, height: height))
-        boxView.layer.borderColor = UIColor.red.cgColor
+        boxView.layer.borderColor = UIColor.green.cgColor
         boxView.layer.borderWidth = 2
         boxView.backgroundColor = UIColor.clear
 
