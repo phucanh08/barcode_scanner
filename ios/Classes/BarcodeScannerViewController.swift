@@ -43,8 +43,9 @@ class BarcodeScannerViewController: UIViewController {
         isFreezeCapture = true
     }
     public func unfreezeCapture() {
-        for (_, overlayView) in self.overlayViews {
+        for (code, overlayView) in self.overlayViews {
             overlayView.removeFromSuperview()
+            self.overlayViews.removeValue(forKey: code)
         }
         self.scanner?.unfreezeCapture()
         isFreezeCapture = false
@@ -83,7 +84,7 @@ class BarcodeScannerViewController: UIViewController {
         }
         
         UIDevice.current.endGeneratingDeviceOrientationNotifications()
-
+        
         MTBBarcodeScanner.requestCameraPermission(success: { success in
             if success {
                 self.startScan()
@@ -129,6 +130,7 @@ class BarcodeScannerViewController: UIViewController {
                 }
             })
         } catch {
+            self.drawOverlays(on: nil)
             self.scanResult(ScanResult.with {
                 $0.type = .error
                 $0.rawContent = "\(error)"
