@@ -34,6 +34,7 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
     let eventChannel: FlutterEventChannel
     let methodChannel: FlutterMethodChannel
     let eventChannelHandler: EventChannelHandler
+    let imageView = UIImageView()
     
     init(
         frame: CGRect,
@@ -59,6 +60,11 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
         
         scannerViewController.delegate = self
         _view.addSubview(scannerViewController.view)
+        imageView.frame = _view.bounds // Đặt kích thước bằng với view cha
+        imageView.autoresizingMask = [.flexibleWidth, .flexibleHeight] // Auto resize
+        imageView.contentMode = .scaleAspectFit
+        imageView.isHidden = true // Ẩn ban đầu
+        _view.addSubview(imageView)
     }
     
     func view() -> UIView {
@@ -74,6 +80,11 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
             self.scannerViewController.freezeCapture()
             break;
         case "resumeCamera":
+            DispatchQueue.main.async {
+                self.scannerViewController.view.isHidden = false
+                self.imageView.image = nil
+                self.imageView.isHidden = true
+            }
             self.scannerViewController.unfreezeCapture()
             break;
         default:
@@ -87,10 +98,17 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
         let fileURL = URL(fileURLWithPath: path)
         
         // 2. Tải hình ảnh từ URL
-        guard let image = UIImage(contentsOfFile: fileURL.path) else {
+        guard let image = UIImage(contentsOfFile: fileURL.path)?.fixOrientation() else {
             print("Không thể tải hình ảnh từ đường dẫn: \(path)")
             result(FlutterError(code: "INVALID_IMAGE", message: "Không thể tải hình ảnh từ đường dẫn: \(path)", details: nil))
             return
+        }
+        
+        DispatchQueue.main.async {
+            self.imageView.subviews.forEach { $0.removeFromSuperview() }
+            self.imageView.image = image
+            self.imageView.isHidden = false
+            self.scannerViewController.view.isHidden = true
         }
         
         // 3. Chuyển đổi UIImage thành CIImage
@@ -114,6 +132,11 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
             }
             
             // 5. Xử lý kết quả
+            DispatchQueue.main.async {
+                for barcode in results {
+                    self.drawBoundingBox(for: barcode, in: image)
+                }
+            }
             result(results.map { $0.payloadStringValue ?? "" }.filter { !$0.isEmpty })
             
         }
@@ -126,6 +149,35 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, BarcodeScannerViewContr
             print("Không thể thực hiện yêu cầu phát hiện mã vạch: \(error.localizedDescription)")
             result(FlutterError(code: "Error when scanning barcodes", message:"Không thể thực hiện yêu cầu phát hiện mã vạch: \(error.localizedDescription)", details: nil))
         }
+    }
+    
+    func drawBoundingBox(for barcode: VNBarcodeObservation, in image: UIImage) {
+        let boundingBox = barcode.boundingBox // (x, y, width, height) normalized từ 0 - 1
+        
+        let imageViewSize = imageView.bounds.size
+        let imageSize = image.size
+        
+        let scaleX = imageViewSize.width / imageSize.width
+        let scaleY = imageViewSize.height / imageSize.height
+
+        // Tính toán scale để khớp với ImageView
+        let scale = (imageViewSize.width / imageSize.width * imageSize.height > imageViewSize.height) ? scaleY : scaleX
+
+        let wLost = (scale == scaleY) ? (imageSize.width * scale - imageViewSize.width) / 2 : 0
+        let hLost = (scale == scaleY) ? 0 : (imageSize.height * scale - imageViewSize.height) / 2
+
+        // Chuyển đổi tọa độ bounding box
+        let x = boundingBox.origin.x * imageSize.width * scale - wLost
+        let y = (1 - boundingBox.origin.y - boundingBox.height) * imageSize.height * scale - hLost
+        let width = boundingBox.width * imageSize.width * scale
+        let height = boundingBox.height * imageSize.height * scale
+
+        let boxView = UIView(frame: CGRect(x: x, y: y, width: width, height: height))
+        boxView.layer.borderColor = UIColor.red.cgColor
+        boxView.layer.borderWidth = 2
+        boxView.backgroundColor = UIColor.clear
+
+        imageView.addSubview(boxView)
     }
     
     
@@ -154,5 +206,47 @@ class EventChannelHandler: NSObject, FlutterStreamHandler {
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         eventSink = nil
         return nil
+    }
+}
+
+extension UIImage {
+    func fixOrientation() -> UIImage {
+        guard let cgImage = self.cgImage else { return self }
+        if self.imageOrientation == .up { return self }
+
+        var transform = CGAffineTransform.identity
+
+        switch self.imageOrientation {
+        case .down, .downMirrored:
+            transform = transform.translatedBy(x: size.width, y: size.height).rotated(by: .pi)
+        case .left, .leftMirrored:
+            transform = transform.translatedBy(x: size.width, y: 0).rotated(by: .pi / 2)
+        case .right, .rightMirrored:
+            transform = transform.translatedBy(x: 0, y: size.height).rotated(by: -.pi / 2)
+        default:
+            break
+        }
+
+        guard let colorSpace = cgImage.colorSpace,
+              let ctx = CGContext(
+                data: nil,
+                width: Int(size.width),
+                height: Int(size.height),
+                bitsPerComponent: cgImage.bitsPerComponent,
+                bytesPerRow: 0,
+                space: colorSpace,
+                bitmapInfo: cgImage.bitmapInfo.rawValue
+              ) else { return self }
+
+        ctx.concatenate(transform)
+        switch self.imageOrientation {
+        case .left, .leftMirrored, .right, .rightMirrored:
+            ctx.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.height, height: size.width))
+        default:
+            ctx.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        }
+
+        guard let newCgImage = ctx.makeImage() else { return self }
+        return UIImage(cgImage: newCgImage)
     }
 }
