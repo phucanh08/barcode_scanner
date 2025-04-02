@@ -77,8 +77,24 @@ internal class BarcodeScannerView(
                 result
             )
 
-            "pauseCamera" -> pauseCameraPreview()
-            "resumeCamera" -> resumeCameraPreview()
+            "pauseCamera" -> {
+                val isPauseCamera = barcodeScannerViewController.pauseCameraPreview()
+                result.success(isPauseCamera)
+            }
+            "resumeCamera" -> {
+                val isResumeCamera = barcodeScannerViewController.resumeCameraPreview()
+                result.success(isResumeCamera)
+            }
+            "isFlashOn" -> {
+                val isFlashOn = barcodeScannerViewController.isFlashOn()
+                result.success(isFlashOn)
+            }
+
+            "toggleFlash" -> {
+                val isFlashOn = barcodeScannerViewController.toggleFlash()
+                result.success(isFlashOn)
+            }
+
             else -> result.notImplemented()
         }
     }
@@ -110,15 +126,7 @@ internal class BarcodeScannerView(
 
                 val res = barcodeDetection.zxingProcess(bitmap)
                 val list = listOfNotNull(res?.text)
-                if (list.isEmpty()) {
-                    result.error(
-                        "NOT_FOUND",
-                        "No barcode found in the image",
-                        null
-                    )
-                } else {
-                    result.success(list)
-                }
+                result.success(list)
             } catch (e: Exception) {
                 result.error("BARCODE_DETECTION_ERROR", e.message, null)
             } finally {
@@ -127,15 +135,25 @@ internal class BarcodeScannerView(
         }
     }
 
-    private fun pauseCameraPreview() {
-        barcodeScannerViewController.pauseCameraPreview()
-        imageView.visibility = View.VISIBLE
+    private fun pauseCameraPreview(): Boolean {
+        try {
+            barcodeScannerViewController.pauseCameraPreview()
+            imageView.visibility = View.VISIBLE
+            return true
+        } catch (_: Exception) {
+            return false
+        }
     }
 
-    private fun resumeCameraPreview() {
-        barcodeScannerViewController.resumeCameraPreview()
-        imageView.setImageResource(0)
-        imageView.visibility = View.GONE
+    private fun resumeCameraPreview(): Boolean {
+        try {
+            barcodeScannerViewController.resumeCameraPreview()
+            imageView.setImageResource(0)
+            imageView.visibility = View.GONE
+            return true
+        } catch (_: Exception) {
+            return false
+        }
     }
 
     override fun didUpdateBoundingBoxOverlay(rectF: RectF?, bitmap: Bitmap?) {

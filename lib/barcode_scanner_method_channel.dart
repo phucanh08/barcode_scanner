@@ -10,12 +10,34 @@ class MethodChannelBarcodeScanner extends BarcodeScannerPlatform {
   }
 
   @override
-  void pauseCamera() {
-    methodChannel?.invokeMethod('pauseCamera');
+  Future<bool> pauseCamera() async {
+    final methodChannel = await methodChannelComparator.future;
+    return methodChannel
+        .invokeMethod<bool>('pauseCamera')
+        .then((value) => value ?? false);
   }
 
   @override
-  void resumeCamera() {
-    methodChannel?.invokeMethod('resumeCamera');
+  Future<bool> resumeCamera() async {
+    final methodChannel = await methodChannelComparator.future;
+    return methodChannel
+        .invokeMethod<bool>('resumeCamera')
+        .then((value) => value ?? false);
+  }
+
+  @override
+  Future<bool> isFlashOn() async {
+    final methodChannel = await methodChannelComparator.future;
+    return methodChannel
+        .invokeMethod<bool>('isFlashOn')
+        .then((value) => value ?? false);
+  }
+
+  @override
+  Future<bool> toggleFlash() async {
+    final methodChannel = await methodChannelComparator.future;
+    return methodChannel
+        .invokeMethod<bool>('toggleFlash')
+        .then((value) => value ?? false);
   }
 }

@@ -13,6 +13,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageAnalysis.Analyzer
 import androidx.camera.core.Preview
+import androidx.camera.core.TorchState
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
@@ -36,6 +37,8 @@ class BarcodeScannerViewController(private val context: Context, private val ana
     val previewView: PreviewView = PreviewView(context)
     var isPauseCamera = false
 
+    private var camera: androidx.camera.core.Camera? = null
+
     init {
         previewUseCase = Preview.Builder()
             .setTargetRotation(rotation)
@@ -43,6 +46,26 @@ class BarcodeScannerViewController(private val context: Context, private val ana
                 it.surfaceProvider = previewView.surfaceProvider
             }
         startCamera()
+    }
+
+    /**
+     * Kiểm tra xem đèn flash có đang bật không
+     * @return true nếu đèn flash đang bật, false nếu đang tắt
+     */
+    fun isFlashOn(): Boolean {
+        return camera?.cameraInfo?.torchState?.value == TorchState.ON
+    }
+
+    /**
+     * Bật/tắt đèn flash
+     * @return trạng thái đèn flash sau khi thay đổi (true: bật, false: tắt)
+     */
+    fun toggleFlash(): Boolean {
+        val camera = this.camera ?: return false
+
+        val enableTorch = camera.cameraInfo.torchState.value != TorchState.ON
+        camera.cameraControl.enableTorch(enableTorch)
+        return enableTorch
     }
 
     fun stopCamera() {
@@ -71,20 +94,9 @@ class BarcodeScannerViewController(private val context: Context, private val ana
     fun pauseCameraPreview() {
         if(isPauseCamera) return
         isPauseCamera = true
-//        Handler(Looper.getMainLooper()).postDelayed({
-//            cameraProvider?.unbindAll()
-//        }, 100)
     }
 
     fun resumeCameraPreview() {
-//        val lifecycleOwner = getLifecycleOwner()
-//        if (lifecycleOwner == null) return
-//        cameraProvider?.bindToLifecycle(
-//            lifecycleOwner,
-//            cameraSelector,
-//            previewUseCase,
-//            imageAnalyzer
-//        )
         isPauseCamera = false
     }
 
@@ -115,7 +127,7 @@ class BarcodeScannerViewController(private val context: Context, private val ana
 
             cameraProvider?.unbindAll()
 
-            cameraProvider?.bindToLifecycle(
+            camera = cameraProvider?.bindToLifecycle(
                 lifecycleOwner,
                 cameraSelector,
                 previewUseCase,

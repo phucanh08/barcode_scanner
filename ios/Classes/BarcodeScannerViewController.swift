@@ -5,7 +5,7 @@ class BarcodeScannerViewController: UIViewController {
     private var overlayViews = [String: UIView]()
     private var previewView: UIView?
     private var scanner: MTBBarcodeScanner?
-    private var isFreezeCapture: Bool = false
+    var isFreezeCapture: Bool = false
     
     var config: Configuration = Configuration()
     
@@ -29,7 +29,7 @@ class BarcodeScannerViewController: UIViewController {
         return AVCaptureDevice.default(for: .video)
     }
     
-    private var isFlashOn: Bool {
+    public var isFlashOn: Bool {
         let settings = AVCapturePhotoSettings()
         return device != nil && (settings.flashMode == AVCaptureDevice.FlashMode.on || device?.torchMode == .on)
     }
@@ -206,7 +206,7 @@ class BarcodeScannerViewController: UIViewController {
         });
     }
     
-    @objc private func onToggleFlash() {
+    @objc public func onToggleFlash() {
         setFlashState(!isFlashOn)
     }
     

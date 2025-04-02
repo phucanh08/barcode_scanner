@@ -106,27 +106,18 @@ class BarcodeDetection(
             val rawResult = mMultiFormatReader?.decodeWithState(binaryBitmap)
                 ?: mMultiFormatReader?.decodeWithState(BinaryBitmap(HybridBinarizer(source.invert())))
             handleResult(rawResult, bitmap)
-            if (rawResult != null) {
-                return rawResult
-            } else {
+
+            if (rawResult == null) {
                 CoroutineScope(Dispatchers.Main).launch {
                     controllerDelegate.didUpdateBoundingBoxOverlay(null)
                 }
-                controllerDelegate.didFailWithErrorCode(
-                    "NOT_FOUND",
-                    "No barcode found in the image",
-                    null
-                )
             }
+            return rawResult
         } catch (_: NotFoundException) {
             CoroutineScope(Dispatchers.Main).launch {
                 controllerDelegate.didUpdateBoundingBoxOverlay(null)
             }
-            controllerDelegate.didFailWithErrorCode(
-                "NOT_FOUND",
-                "No barcode found in the image",
-                null
-            )
+            return null
         } catch (e: Exception) {
             CoroutineScope(Dispatchers.Main).launch {
                 controllerDelegate.didUpdateBoundingBoxOverlay(null)
