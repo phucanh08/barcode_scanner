@@ -1,6 +1,5 @@
-export 'model/model.dart';
 export 'barcode_scanner_view.dart';
-export 'gen/protos/protos.pb.dart' show BarcodeFormat;
+export 'gen/protos/protos.pb.dart';
 
 import 'barcode_scanner_platform_interface.dart';
 

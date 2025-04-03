@@ -81,11 +81,19 @@ class GeneralScannerPage extends StatelessWidget {
       child: Stack(
         children: [
           BarcodeScannerView(
-            options: const ScanOptions(
-              restrictFormat: [
+            options: Configuration(
+              barcodeFormats: [
                 BarcodeFormat.qr,
                 BarcodeFormat.pdf417,
               ],
+              cameraSettings: CameraSettings(
+                resolutionPreset: ResolutionPreset.hd1280x720,
+                cameraPosition: CameraPosition.back
+              ),
+              resultSettings: ResultSettings(
+                beepOnScan: false,
+                vibrateOnScan: false,
+              ),
             ),
             onData: (data) {
               debugPrint('Barcode data: ${data.rawContent}');

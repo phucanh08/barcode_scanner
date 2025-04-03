@@ -2,13 +2,12 @@ import Vision
 import AVFoundation
 import UIKit
 
-class BarcodeDetector {
+class BarcodeScanner {
     private var currentRequests: [VNRequest] = []
     private var barcodeFormats: [VNBarcodeSymbology] = []
     var delegate: BarcodeScannerListener?
     
-    
-    init(formats: [String]) { // Update initializer
+    func setFormats(_ formats: [BarcodeFormat]) {
         self.barcodeFormats = convertFormats(formats)
     }
     
@@ -32,7 +31,7 @@ class BarcodeDetector {
         
         let request = VNDetectBarcodesRequest()
         do {
-            request.symbologies = barcodeFormats // Danh sách format cần quét
+            request.symbologies = barcodeFormats
             
             let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
             
@@ -50,22 +49,22 @@ class BarcodeDetector {
             return []
         }
         
+        var rect: CGRect? = nil
+        
+        if let barcode = results.first {
+            rect = convertToViewCoordinates(normalizedRect: barcode.boundingBox)
+        }
+        DispatchQueue.main.async {
+            self.delegate?.didUpdateBoundingBoxOverlay(rect, size: size)
+        }
+        
         var scanResults: [ScanResult] = []
         
         
         for barcode in results {
-            let rect = convertToViewCoordinates(normalizedRect: barcode.boundingBox)
-            DispatchQueue.main.async {
-                self.delegate?.didUpdateBoundingBoxOverlay(rect, size: size)
-            }
-            
-            // Convert VN BarcodeSymbology sang định dạng của bạn
             let format = convertSymbology(barcode.symbology)
             let rawContent = barcode.payloadStringValue ?? ""
             
-            print("📌 Barcode found: \(rawContent)")
-            
-            // Tạo kết quả ScanResult
             let scanResult = ScanResult.with {
                 $0.type = .barcode
                 $0.rawContent = rawContent
@@ -76,9 +75,8 @@ class BarcodeDetector {
             scanResults.append(scanResult)
         }
         
-        // Gửi danh sách barcode đã quét
         DispatchQueue.main.async {
-            self.delegate?.didScanBarcodeWithResults(scanResults) // Gửi toàn bộ danh sách barcode
+            self.delegate?.didScanBarcodeWithResults(scanResults)
         }
         
         return scanResults
@@ -101,27 +99,26 @@ class BarcodeDetector {
         }
     }
     
-    private func convertFormats(_ formats: [String]) -> [VNBarcodeSymbology] {
+    private func convertFormats(_ formats: [BarcodeFormat]) -> [VNBarcodeSymbology] {
         return formats.compactMap {
-            switch $0.lowercased() {
-            case "aztec": return .aztec
-            case "code39": return .code39
-            case "code93": return .code93
-            case "code128": return .code128
-            case "dataMatrix": return .dataMatrix
-            case "ean8": return .ean8
-            case "ean13": return .ean13
-            case "itf": return .itf14
-            case "pdf417": return .pdf417
-            case "qr": return .qr
-            case "upce": return .upce
+            switch $0 {
+            case .aztec: return .aztec
+            case .code39: return .code39
+            case .code93: return .code93
+            case .code128: return .code128
+            case .dataMatrix: return .dataMatrix
+            case .ean8: return .ean8
+            case .ean13: return .ean13
+            case .interleaved2Of5: return .i2of5
+            case .pdf417: return .pdf417
+            case .qr: return .qr
+            case .upce: return .upce
             default: return nil
             }
         }
     }
     
     private func convertToViewCoordinates(normalizedRect: CGRect) -> CGRect {
-        // Transformation để convert từ coordinates hệ thống Vision sang view coordinates
         return CGRect(
             x: normalizedRect.origin.x,
             y: 1 - normalizedRect.origin.y - normalizedRect.height,
@@ -136,20 +133,3 @@ protocol BarcodeScannerListener: AnyObject {
     func didScanBarcodeWithResults(_ results: [ScanResult])
     func didFailWithErrorCode(_ code: String, _ message: String, _ details: Any?)
 }
-//
-//enum BarcodeFormat {
-//    case aztec, code39, code93, code128, dataMatrix, ean8, ean13
-//    case interleaved2of5, pdf417, qr, upce, unknown
-//}
-//
-//struct ScanResult {
-//    let format: BarcodeFormat
-//    let formatNote: String
-//    let rawContent: String
-//    let type: ResultType
-//    let boundingBox: CGRect?
-//}
-//
-//enum ResultType {
-//    case barcode, error
-//}

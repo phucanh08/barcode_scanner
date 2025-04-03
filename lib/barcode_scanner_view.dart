@@ -8,10 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'barcode_scanner_platform_interface.dart';
-import 'model/scan_options.dart';
-import 'model/scan_result.dart';
 
-import 'gen/protos/protos.pb.dart' as proto;
+import 'gen/protos/protos.pb.dart';
 
 class BarcodeScannerView extends StatefulWidget {
   const BarcodeScannerView({
@@ -23,7 +21,7 @@ class BarcodeScannerView extends StatefulWidget {
 
   final void Function(ScanResult)? onData;
   final void Function(String)? onError;
-  final ScanOptions options;
+  final Configuration options;
 
   @override
   State<BarcodeScannerView> createState() => _BarcodeScannerViewState();
@@ -39,7 +37,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
     streamSubscription = eventChannel.receiveBroadcastStream().listen((event) {
       try {
         if (event != null) {
-          final tmpResult = proto.ScanResult.fromBuffer(event);
+          final tmpResult = ScanResult.fromBuffer(event);
           widget.onData?.call(ScanResult(
             format: tmpResult.format,
             formatNote: tmpResult.formatNote,
@@ -64,12 +62,10 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
 
   @override
   Widget build(BuildContext context) {
-    final config = proto.Configuration()
-      ..barcodeFormats.addAll(widget.options.restrictFormat);
     const viewType = 'barcode_scanner_view';
     const hitTestBehavior = PlatformViewHitTestBehavior.opaque;
     const layoutDirection = TextDirection.ltr;
-    final creationParams = config.writeToBuffer();
+    final creationParams = widget.options.writeToBuffer();
     const creationParamsCodec = StandardMessageCodec();
     const gestureRecognizers = <Factory<OneSequenceGestureRecognizer>>{};
 

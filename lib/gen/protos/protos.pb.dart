@@ -21,15 +21,15 @@ export 'protos.pbenum.dart';
 
 class CameraSettings extends $pb.GeneratedMessage {
   factory CameraSettings({
-    Resolution? resolution,
-    CameraSelection? cameraSelection,
+    ResolutionPreset? resolutionPreset,
+    CameraPosition? cameraPosition,
   }) {
     final $result = create();
-    if (resolution != null) {
-      $result.resolution = resolution;
+    if (resolutionPreset != null) {
+      $result.resolutionPreset = resolutionPreset;
     }
-    if (cameraSelection != null) {
-      $result.cameraSelection = cameraSelection;
+    if (cameraPosition != null) {
+      $result.cameraPosition = cameraPosition;
     }
     return $result;
   }
@@ -38,8 +38,8 @@ class CameraSettings extends $pb.GeneratedMessage {
   factory CameraSettings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CameraSettings', createEmptyInstance: create)
-    ..e<Resolution>(1, _omitFieldNames ? '' : 'resolution', $pb.PbFieldType.OE, defaultOrMaker: Resolution.hd, valueOf: Resolution.valueOf, enumValues: Resolution.values)
-    ..e<CameraSelection>(2, _omitFieldNames ? '' : 'cameraSelection', $pb.PbFieldType.OE, protoName: 'cameraSelection', defaultOrMaker: CameraSelection.font, valueOf: CameraSelection.valueOf, enumValues: CameraSelection.values)
+    ..e<ResolutionPreset>(1, _omitFieldNames ? '' : 'resolutionPreset', $pb.PbFieldType.OE, protoName: 'resolutionPreset', defaultOrMaker: ResolutionPreset.hd1280x720, valueOf: ResolutionPreset.valueOf, enumValues: ResolutionPreset.values)
+    ..e<CameraPosition>(2, _omitFieldNames ? '' : 'cameraPosition', $pb.PbFieldType.OE, protoName: 'cameraPosition', defaultOrMaker: CameraPosition.font, valueOf: CameraPosition.valueOf, enumValues: CameraPosition.values)
     ..hasRequiredFields = false
   ;
 
@@ -64,25 +64,25 @@ class CameraSettings extends $pb.GeneratedMessage {
   static CameraSettings getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CameraSettings>(create);
   static CameraSettings? _defaultInstance;
 
-  /// Resolution
+  /// Resolution Preset
   @$pb.TagNumber(1)
-  Resolution get resolution => $_getN(0);
+  ResolutionPreset get resolutionPreset => $_getN(0);
   @$pb.TagNumber(1)
-  set resolution(Resolution v) { $_setField(1, v); }
+  set resolutionPreset(ResolutionPreset v) { $_setField(1, v); }
   @$pb.TagNumber(1)
-  $core.bool hasResolution() => $_has(0);
+  $core.bool hasResolutionPreset() => $_has(0);
   @$pb.TagNumber(1)
-  void clearResolution() => $_clearField(1);
+  void clearResolutionPreset() => $_clearField(1);
 
-  /// Camera Selection
+  /// Camera Position
   @$pb.TagNumber(2)
-  CameraSelection get cameraSelection => $_getN(1);
+  CameraPosition get cameraPosition => $_getN(1);
   @$pb.TagNumber(2)
-  set cameraSelection(CameraSelection v) { $_setField(2, v); }
+  set cameraPosition(CameraPosition v) { $_setField(2, v); }
   @$pb.TagNumber(2)
-  $core.bool hasCameraSelection() => $_has(1);
+  $core.bool hasCameraPosition() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCameraSelection() => $_clearField(2);
+  void clearCameraPosition() => $_clearField(2);
 }
 
 /// protos/configuration.proto

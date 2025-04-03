@@ -1,7 +1,7 @@
 import AVFoundation
 import UIKit
 
-class BarcodeScannerViewController2: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
     private var previewLayer: AVCaptureVideoPreviewLayer?
     private var previewView: UIView?
     
@@ -9,7 +9,7 @@ class BarcodeScannerViewController2: UIViewController, AVCaptureVideoDataOutputS
     private var currentCamera: AVCaptureDevice?
     private var videoInput: AVCaptureDeviceInput?
     private var videoOutput: AVCaptureVideoDataOutput?
-
+    
     private var resolution: AVCaptureSession.Preset = .hd1280x720
     private var cameraPosition: AVCaptureDevice.Position = .back
     
@@ -23,12 +23,17 @@ class BarcodeScannerViewController2: UIViewController, AVCaptureVideoDataOutputS
         view.addSubview(previewView!)
     }
     
-    func setResolution(resolution: Resolution) {
+    func setCameraSettings(_ settings: CameraSettings) {
+        setResolution(settings.resolutionPreset)
+        setCameraPosition(settings.cameraPosition)
+    }
+    
+    func setResolution(_ resolution: ResolutionPreset) {
         switch resolution {
-        case Resolution.hd:
+        case .hd1280X720:
             self.resolution = .hd1280x720
             break
-        case Resolution.fullHd:
+        case .hd1920X1080:
             self.resolution = .hd1920x1080
             break
         default:
@@ -36,12 +41,12 @@ class BarcodeScannerViewController2: UIViewController, AVCaptureVideoDataOutputS
         }
     }
     
-    func setCameraPosition(cameraPosition: CameraSelection) {
+    func setCameraPosition(_ cameraPosition: CameraPosition) {
         switch cameraPosition {
-        case CameraSelection.back:
+        case .back:
             self.cameraPosition = .back
             break
-        case CameraSelection.font:
+        case .font:
             self.cameraPosition = .front
             break
         default:
@@ -90,22 +95,33 @@ class BarcodeScannerViewController2: UIViewController, AVCaptureVideoDataOutputS
     
     
     func pauseCameraPreview() {
-        isPauseCamera = true
+        DispatchQueue.global(qos: .background).async {
+            guard let currentSession = self.currentSession else { return }
+            if currentSession.isRunning {
+                currentSession.stopRunning()
+            }
+            self.isPauseCamera = true
+        }
     }
     
-    
     func resumeCameraPreview() {
-        isPauseCamera = false
+        DispatchQueue.global(qos: .background).async {
+            guard let currentSession = self.currentSession else { return }
+            if !currentSession.isRunning {
+                currentSession.startRunning()
+            }
+            self.isPauseCamera = false
+        }
     }
     
     func getSize() -> CGSize {
         switch(resolution) {
         case .hd1280x720:
-            return CGSize(width: 1280, height: 720)
+            return CGSize(width: 720, height: 1280)
         case .hd1920x1080:
-            return CGSize(width: 1920, height: 1080)
+            return CGSize(width: 1080, height: 1920)
         default:
-            return CGSize(width: 1280, height: 720)
+            return CGSize(width: 720, height: 1280)
         }
     }
     
@@ -127,7 +143,7 @@ protocol VideoSampleBufferDelegate: AnyObject {
 }
 
 
-extension BarcodeScannerViewController2 {
+extension CameraManager {
     private func setupCamera() {
         guard let captureSession = currentSession else {return}
         captureSession.beginConfiguration()

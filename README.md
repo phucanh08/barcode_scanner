@@ -33,18 +33,20 @@ Create an instance of BarcodeScannerView
 
 ```dart
 BarcodeScannerView(
-  options: const ScanOptions(
-    restrictFormat: [
+  options: Configuration(
+    barcodeFormats: [
       BarcodeFormat.qr,
       BarcodeFormat.pdf417,
     ],
-    android: AndroidOptions(useAutoFocus: false),
-    // strings: {},
+    cameraSettings: CameraSettings(
+      resolutionPreset: ResolutionPreset.hd1280x720,
+      cameraPosition: CameraPosition.back
+    ),
   ),
   onData: (data) {
-    print('Barcode data: ${data.rawContent}');
+  debugPrint('Barcode data: ${data.rawContent}');
   },
-)
+),
 ```
 
 ## Example app

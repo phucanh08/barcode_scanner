@@ -100,45 +100,44 @@ enum BarcodeFormat: SwiftProtobuf.Enum, Swift.CaseIterable {
 }
 
 /// protos/camera_settings.proto
-enum Resolution: SwiftProtobuf.Enum, Swift.CaseIterable {
+enum ResolutionPreset: SwiftProtobuf.Enum, Swift.CaseIterable {
   typealias RawValue = Int
-  case hd // = 0
-  case fullHd // = 1
+  case hd1280X720 // = 0
+  case hd1920X1080 // = 1
   case UNRECOGNIZED(Int)
 
   init() {
-    self = .hd
+    self = .hd1280X720
   }
 
   init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .hd
-    case 1: self = .fullHd
+    case 0: self = .hd1280X720
+    case 1: self = .hd1920X1080
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
 
   var rawValue: Int {
     switch self {
-    case .hd: return 0
-    case .fullHd: return 1
+    case .hd1280X720: return 0
+    case .hd1920X1080: return 1
     case .UNRECOGNIZED(let i): return i
     }
   }
 
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Resolution] = [
-    .hd,
-    .fullHd,
+  static let allCases: [ResolutionPreset] = [
+    .hd1280X720,
+    .hd1920X1080,
   ]
 
 }
 
-enum CameraSelection: SwiftProtobuf.Enum, Swift.CaseIterable {
+enum CameraPosition: SwiftProtobuf.Enum, Swift.CaseIterable {
   typealias RawValue = Int
   case font // = 0
   case back // = 1
-  case external // = 2
   case UNRECOGNIZED(Int)
 
   init() {
@@ -149,7 +148,6 @@ enum CameraSelection: SwiftProtobuf.Enum, Swift.CaseIterable {
     switch rawValue {
     case 0: self = .font
     case 1: self = .back
-    case 2: self = .external
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -158,16 +156,14 @@ enum CameraSelection: SwiftProtobuf.Enum, Swift.CaseIterable {
     switch self {
     case .font: return 0
     case .back: return 1
-    case .external: return 2
     case .UNRECOGNIZED(let i): return i
     }
   }
 
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [CameraSelection] = [
+  static let allCases: [CameraPosition] = [
     .font,
     .back,
-    .external,
   ]
 
 }
@@ -216,11 +212,11 @@ struct CameraSettings: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// Resolution
-  var resolution: Resolution = .hd
+  /// Resolution Preset
+  var resolutionPreset: ResolutionPreset = .hd1280X720
 
-  /// Camera Selection
-  var cameraSelection: CameraSelection = .font
+  /// Camera Position
+  var cameraPosition: CameraPosition = .font
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -323,18 +319,17 @@ extension BarcodeFormat: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
-extension Resolution: SwiftProtobuf._ProtoNameProviding {
+extension ResolutionPreset: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "hd"),
-    1: .same(proto: "fullHd"),
+    0: .same(proto: "hd1280x720"),
+    1: .same(proto: "hd1920x1080"),
   ]
 }
 
-extension CameraSelection: SwiftProtobuf._ProtoNameProviding {
+extension CameraPosition: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "font"),
     1: .same(proto: "back"),
-    2: .same(proto: "external"),
   ]
 }
 
@@ -349,8 +344,8 @@ extension ResultType: SwiftProtobuf._ProtoNameProviding {
 extension CameraSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "CameraSettings"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "resolution"),
-    2: .same(proto: "cameraSelection"),
+    1: .same(proto: "resolutionPreset"),
+    2: .same(proto: "cameraPosition"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -359,26 +354,26 @@ extension CameraSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularEnumField(value: &self.resolution) }()
-      case 2: try { try decoder.decodeSingularEnumField(value: &self.cameraSelection) }()
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.resolutionPreset) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.cameraPosition) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.resolution != .hd {
-      try visitor.visitSingularEnumField(value: self.resolution, fieldNumber: 1)
+    if self.resolutionPreset != .hd1280X720 {
+      try visitor.visitSingularEnumField(value: self.resolutionPreset, fieldNumber: 1)
     }
-    if self.cameraSelection != .font {
-      try visitor.visitSingularEnumField(value: self.cameraSelection, fieldNumber: 2)
+    if self.cameraPosition != .font {
+      try visitor.visitSingularEnumField(value: self.cameraPosition, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: CameraSettings, rhs: CameraSettings) -> Bool {
-    if lhs.resolution != rhs.resolution {return false}
-    if lhs.cameraSelection != rhs.cameraSelection {return false}
+    if lhs.resolutionPreset != rhs.resolutionPreset {return false}
+    if lhs.cameraPosition != rhs.cameraPosition {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
