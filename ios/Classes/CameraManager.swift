@@ -24,12 +24,12 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
     }
     
     func setCameraSettings(_ settings: CameraSettings) {
-        setResolution(settings.resolutionPreset)
+        setResolutionPreset(settings.resolutionPreset)
         setCameraPosition(settings.cameraPosition)
     }
     
-    func setResolution(_ resolution: ResolutionPreset) {
-        switch resolution {
+    func setResolutionPreset(_ resolutionPreset: ResolutionPreset) {
+        switch resolutionPreset {
         case .hd1280X720:
             self.resolution = .hd1280x720
             break
@@ -37,6 +37,7 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
             self.resolution = .hd1920x1080
             break
         default:
+            self.resolution = .hd1280x720
             break
         }
     }

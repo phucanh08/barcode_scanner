@@ -5,7 +5,7 @@ import UIKit
 class BarcodeScanner {
     private var currentRequests: [VNRequest] = []
     private var barcodeFormats: [VNBarcodeSymbology] = []
-    var delegate: BarcodeScannerListener?
+    var delegate: BarcodeScannerDelegate?
     
     func setFormats(_ formats: [BarcodeFormat]) {
         self.barcodeFormats = convertFormats(formats)
@@ -128,7 +128,7 @@ class BarcodeScanner {
     }
 }
 
-protocol BarcodeScannerListener: AnyObject {
+protocol BarcodeScannerDelegate: AnyObject {
     func didUpdateBoundingBoxOverlay(_ rect: CGRect?, size: CGSize?)
     func didScanBarcodeWithResults(_ results: [ScanResult])
     func didFailWithErrorCode(_ code: String, _ message: String, _ details: Any?)

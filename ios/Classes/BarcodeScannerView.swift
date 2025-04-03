@@ -1,10 +1,11 @@
 import Flutter
 import AVFoundation
 
-class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelegate, BarcodeScannerListener {
+class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelegate, BarcodeScannerDelegate {
     private let _view: UIView
     private let imageView = UIImageView()
     private let boundingBoxOverlay = BoundingBoxOverlay()
+    
     private let barcodeScanner = BarcodeScanner()
     private let cameraManager = CameraManager()
     
@@ -41,8 +42,8 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
         methodChannel.setMethodCallHandler (self.methodChanelHandler)
         eventChannel.setStreamHandler(eventChannelHandler)
         
-        cameraManager.delegate = self
         barcodeScanner.delegate = self
+        cameraManager.delegate = self
         
         do {
             let configuration = try Configuration(serializedBytes: (args as! FlutterStandardTypedData).data)
