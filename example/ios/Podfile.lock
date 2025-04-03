@@ -1,12 +1,10 @@
 PODS:
   - barcode_scanner (0.0.1):
     - Flutter
-    - MTBBarcodeScanner
     - SwiftProtobuf
   - Flutter (1.0.0)
   - image_picker_ios (0.0.1):
     - Flutter
-  - MTBBarcodeScanner (5.0.11)
   - SwiftProtobuf (1.29.0)
 
 DEPENDENCIES:
@@ -16,7 +14,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - MTBBarcodeScanner
     - SwiftProtobuf
 
 EXTERNAL SOURCES:
@@ -28,10 +25,9 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_picker_ios/ios"
 
 SPEC CHECKSUMS:
-  barcode_scanner: ad0a65947eb6c85a9b7cb8e6a534887cd9c77c6c
+  barcode_scanner: e3b8617910d7b10594a2de0e658f4cb7785990b0
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
-  MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   SwiftProtobuf: b7aa08087e2ab6d162862d143020091254095f69
 
 PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796

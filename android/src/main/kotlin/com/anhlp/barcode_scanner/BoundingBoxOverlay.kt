@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Rect
+import android.graphics.RectF
 import android.view.View
 
 class BoundingBoxOverlay(context: Context) : View(context) {
@@ -16,16 +17,35 @@ class BoundingBoxOverlay(context: Context) : View(context) {
         strokeWidth = 5f
     }
 
-    private var boundingBox: Rect? = null
+    private var rect: Rect? = null
 
-    fun setBoundingBox(rect: Rect?) {
-        boundingBox = rect
+    fun clear() {
+        rect = null
+        invalidate()
+    }
+
+    fun setBoundingBox(rectF: RectF, imageWidth: Int, imageHeight: Int) {
+        val scaleX = width.toFloat() / imageWidth
+        val scaleY = height.toFloat() / imageHeight
+
+        val scale = maxOf(scaleX, scaleY)
+
+        val wLost = (imageWidth * scale - width) / 2f
+        val hLost = (imageHeight * scale - height) / 2f
+
+        rect = Rect(
+            (scale * rectF.left - wLost).toInt(),
+            (scale * rectF.top - hLost).toInt(),
+            (scale * rectF.right - wLost).toInt(),
+            (scale * rectF.bottom - hLost).toInt()
+        )
+
         invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         path.reset()
-        boundingBox?.let {canvas.drawRect(it, paint)}
+        rect?.let {canvas.drawRect(it, paint)}
     }
 }

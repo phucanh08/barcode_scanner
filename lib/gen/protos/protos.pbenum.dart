@@ -49,6 +49,37 @@ class BarcodeFormat extends $pb.ProtobufEnum {
   const BarcodeFormat._(super.v, super.n);
 }
 
+/// protos/camera_settings.proto
+class ResolutionPreset extends $pb.ProtobufEnum {
+  static const ResolutionPreset hd1280x720 = ResolutionPreset._(0, _omitEnumNames ? '' : 'hd1280x720');
+  static const ResolutionPreset hd1920x1080 = ResolutionPreset._(1, _omitEnumNames ? '' : 'hd1920x1080');
+
+  static const $core.List<ResolutionPreset> values = <ResolutionPreset> [
+    hd1280x720,
+    hd1920x1080,
+  ];
+
+  static final $core.Map<$core.int, ResolutionPreset> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static ResolutionPreset? valueOf($core.int value) => _byValue[value];
+
+  const ResolutionPreset._(super.v, super.n);
+}
+
+class CameraPosition extends $pb.ProtobufEnum {
+  static const CameraPosition font = CameraPosition._(0, _omitEnumNames ? '' : 'font');
+  static const CameraPosition back = CameraPosition._(1, _omitEnumNames ? '' : 'back');
+
+  static const $core.List<CameraPosition> values = <CameraPosition> [
+    font,
+    back,
+  ];
+
+  static final $core.Map<$core.int, CameraPosition> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static CameraPosition? valueOf($core.int value) => _byValue[value];
+
+  const CameraPosition._(super.v, super.n);
+}
+
 /// protos/scan_result.proto
 class ResultType extends $pb.ProtobufEnum {
   static const ResultType Barcode = ResultType._(0, _omitEnumNames ? '' : 'Barcode');

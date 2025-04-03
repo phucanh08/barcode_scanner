@@ -19,14 +19,88 @@ export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 export 'protos.pbenum.dart';
 
+class CameraSettings extends $pb.GeneratedMessage {
+  factory CameraSettings({
+    ResolutionPreset? resolutionPreset,
+    CameraPosition? cameraPosition,
+  }) {
+    final $result = create();
+    if (resolutionPreset != null) {
+      $result.resolutionPreset = resolutionPreset;
+    }
+    if (cameraPosition != null) {
+      $result.cameraPosition = cameraPosition;
+    }
+    return $result;
+  }
+  CameraSettings._() : super();
+  factory CameraSettings.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CameraSettings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CameraSettings', createEmptyInstance: create)
+    ..e<ResolutionPreset>(1, _omitFieldNames ? '' : 'resolutionPreset', $pb.PbFieldType.OE, protoName: 'resolutionPreset', defaultOrMaker: ResolutionPreset.hd1280x720, valueOf: ResolutionPreset.valueOf, enumValues: ResolutionPreset.values)
+    ..e<CameraPosition>(2, _omitFieldNames ? '' : 'cameraPosition', $pb.PbFieldType.OE, protoName: 'cameraPosition', defaultOrMaker: CameraPosition.font, valueOf: CameraPosition.valueOf, enumValues: CameraPosition.values)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CameraSettings clone() => CameraSettings()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CameraSettings copyWith(void Function(CameraSettings) updates) => super.copyWith((message) => updates(message as CameraSettings)) as CameraSettings;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CameraSettings create() => CameraSettings._();
+  CameraSettings createEmptyInstance() => create();
+  static $pb.PbList<CameraSettings> createRepeated() => $pb.PbList<CameraSettings>();
+  @$core.pragma('dart2js:noInline')
+  static CameraSettings getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CameraSettings>(create);
+  static CameraSettings? _defaultInstance;
+
+  /// Resolution Preset
+  @$pb.TagNumber(1)
+  ResolutionPreset get resolutionPreset => $_getN(0);
+  @$pb.TagNumber(1)
+  set resolutionPreset(ResolutionPreset v) { $_setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasResolutionPreset() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearResolutionPreset() => $_clearField(1);
+
+  /// Camera Position
+  @$pb.TagNumber(2)
+  CameraPosition get cameraPosition => $_getN(1);
+  @$pb.TagNumber(2)
+  set cameraPosition(CameraPosition v) { $_setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCameraPosition() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCameraPosition() => $_clearField(2);
+}
+
 /// protos/configuration.proto
 class Configuration extends $pb.GeneratedMessage {
   factory Configuration({
-    $core.Iterable<BarcodeFormat>? restrictFormat,
+    $core.Iterable<BarcodeFormat>? barcodeFormats,
+    CameraSettings? cameraSettings,
+    ResultSettings? resultSettings,
   }) {
     final $result = create();
-    if (restrictFormat != null) {
-      $result.restrictFormat.addAll(restrictFormat);
+    if (barcodeFormats != null) {
+      $result.barcodeFormats.addAll(barcodeFormats);
+    }
+    if (cameraSettings != null) {
+      $result.cameraSettings = cameraSettings;
+    }
+    if (resultSettings != null) {
+      $result.resultSettings = resultSettings;
     }
     return $result;
   }
@@ -35,7 +109,9 @@ class Configuration extends $pb.GeneratedMessage {
   factory Configuration.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Configuration', createEmptyInstance: create)
-    ..pc<BarcodeFormat>(1, _omitFieldNames ? '' : 'restrictFormat', $pb.PbFieldType.KE, protoName: 'restrictFormat', valueOf: BarcodeFormat.valueOf, enumValues: BarcodeFormat.values, defaultEnumValue: BarcodeFormat.unknown)
+    ..pc<BarcodeFormat>(1, _omitFieldNames ? '' : 'barcodeFormats', $pb.PbFieldType.KE, protoName: 'barcodeFormats', valueOf: BarcodeFormat.valueOf, enumValues: BarcodeFormat.values, defaultEnumValue: BarcodeFormat.unknown)
+    ..aOM<CameraSettings>(2, _omitFieldNames ? '' : 'cameraSettings', protoName: 'cameraSettings', subBuilder: CameraSettings.create)
+    ..aOM<ResultSettings>(3, _omitFieldNames ? '' : 'resultSettings', protoName: 'resultSettings', subBuilder: ResultSettings.create)
     ..hasRequiredFields = false
   ;
 
@@ -62,7 +138,98 @@ class Configuration extends $pb.GeneratedMessage {
 
   /// Restricts the barcode format which should be read
   @$pb.TagNumber(1)
-  $pb.PbList<BarcodeFormat> get restrictFormat => $_getList(0);
+  $pb.PbList<BarcodeFormat> get barcodeFormats => $_getList(0);
+
+  /// CameraSettings
+  @$pb.TagNumber(2)
+  CameraSettings get cameraSettings => $_getN(1);
+  @$pb.TagNumber(2)
+  set cameraSettings(CameraSettings v) { $_setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCameraSettings() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCameraSettings() => $_clearField(2);
+  @$pb.TagNumber(2)
+  CameraSettings ensureCameraSettings() => $_ensure(1);
+
+  /// ResultSettings
+  @$pb.TagNumber(3)
+  ResultSettings get resultSettings => $_getN(2);
+  @$pb.TagNumber(3)
+  set resultSettings(ResultSettings v) { $_setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasResultSettings() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearResultSettings() => $_clearField(3);
+  @$pb.TagNumber(3)
+  ResultSettings ensureResultSettings() => $_ensure(2);
+}
+
+/// protos/result_settings.proto
+class ResultSettings extends $pb.GeneratedMessage {
+  factory ResultSettings({
+    $core.bool? beepOnScan,
+    $core.bool? vibrateOnScan,
+  }) {
+    final $result = create();
+    if (beepOnScan != null) {
+      $result.beepOnScan = beepOnScan;
+    }
+    if (vibrateOnScan != null) {
+      $result.vibrateOnScan = vibrateOnScan;
+    }
+    return $result;
+  }
+  ResultSettings._() : super();
+  factory ResultSettings.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ResultSettings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResultSettings', createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'beepOnScan', protoName: 'beepOnScan')
+    ..aOB(2, _omitFieldNames ? '' : 'vibrateOnScan', protoName: 'vibrateOnScan')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ResultSettings clone() => ResultSettings()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ResultSettings copyWith(void Function(ResultSettings) updates) => super.copyWith((message) => updates(message as ResultSettings)) as ResultSettings;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ResultSettings create() => ResultSettings._();
+  ResultSettings createEmptyInstance() => create();
+  static $pb.PbList<ResultSettings> createRepeated() => $pb.PbList<ResultSettings>();
+  @$core.pragma('dart2js:noInline')
+  static ResultSettings getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResultSettings>(create);
+  static ResultSettings? _defaultInstance;
+
+  /// Beep on Scan
+  @$pb.TagNumber(1)
+  $core.bool get beepOnScan => $_getBF(0);
+  @$pb.TagNumber(1)
+  set beepOnScan($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBeepOnScan() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBeepOnScan() => $_clearField(1);
+
+  /// Vibrate on Scan
+  @$pb.TagNumber(2)
+  $core.bool get vibrateOnScan => $_getBF(1);
+  @$pb.TagNumber(2)
+  set vibrateOnScan($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasVibrateOnScan() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearVibrateOnScan() => $_clearField(2);
 }
 
 class ScanResult extends $pb.GeneratedMessage {

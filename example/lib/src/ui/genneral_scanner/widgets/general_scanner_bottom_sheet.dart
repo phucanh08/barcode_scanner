@@ -6,13 +6,13 @@ class GeneralScannerBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12,0,12,20),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
       color: CupertinoTheme.of(context).barBackgroundColor,
       child: Column(
-        spacing: 8,
         mainAxisSize: MainAxisSize.min,
         children: [
           const _GroupButton(),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -73,7 +73,6 @@ class _GroupButtonState extends State<_GroupButton> {
       onPressed: onPressed,
       pressedOpacity: 0.9,
       child: Row(
-        spacing: 4,
         children: [
           Icon(
             CupertinoIcons.circle_fill,
@@ -82,6 +81,7 @@ class _GroupButtonState extends State<_GroupButton> {
                 ? theme.primaryContrastingColor
                 : CupertinoColors.transparent,
           ),
+          const SizedBox(width: 4),
           Text(
             text,
             style: TextStyle(
@@ -108,13 +108,13 @@ class _Switch extends StatelessWidget {
 
     return Row(
       mainAxisSize: MainAxisSize.min,
-      spacing: 8,
       children: [
         Text(title),
+        const SizedBox(width: 8),
         StatefulBuilder(builder: (context, setState) {
           return CupertinoSwitch(
             value: currentValue,
-            activeTrackColor: CupertinoColors.activeBlue,
+            activeColor: CupertinoColors.activeBlue,
             onChanged: (bool? value) {
               onChanged(value ?? false);
               setState(() => currentValue = value ?? false);

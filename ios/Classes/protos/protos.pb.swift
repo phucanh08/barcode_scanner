@@ -99,6 +99,75 @@ enum BarcodeFormat: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
+/// protos/camera_settings.proto
+enum ResolutionPreset: SwiftProtobuf.Enum, Swift.CaseIterable {
+  typealias RawValue = Int
+  case hd1280X720 // = 0
+  case hd1920X1080 // = 1
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .hd1280X720
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .hd1280X720
+    case 1: self = .hd1920X1080
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .hd1280X720: return 0
+    case .hd1920X1080: return 1
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static let allCases: [ResolutionPreset] = [
+    .hd1280X720,
+    .hd1920X1080,
+  ]
+
+}
+
+enum CameraPosition: SwiftProtobuf.Enum, Swift.CaseIterable {
+  typealias RawValue = Int
+  case font // = 0
+  case back // = 1
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .font
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .font
+    case 1: self = .back
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .font: return 0
+    case .back: return 1
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static let allCases: [CameraPosition] = [
+    .font,
+    .back,
+  ]
+
+}
+
 /// protos/scan_result.proto
 enum ResultType: SwiftProtobuf.Enum, Swift.CaseIterable {
   typealias RawValue = Int
@@ -138,6 +207,22 @@ enum ResultType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
+struct CameraSettings: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Resolution Preset
+  var resolutionPreset: ResolutionPreset = .hd1280X720
+
+  /// Camera Position
+  var cameraPosition: CameraPosition = .font
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 /// protos/configuration.proto
 struct Configuration: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -145,7 +230,47 @@ struct Configuration: Sendable {
   // methods supported on all messages.
 
   /// Restricts the barcode format which should be read
-  var restrictFormat: [BarcodeFormat] = []
+  var barcodeFormats: [BarcodeFormat] = []
+
+  /// CameraSettings
+  var cameraSettings: CameraSettings {
+    get {return _cameraSettings ?? CameraSettings()}
+    set {_cameraSettings = newValue}
+  }
+  /// Returns true if `cameraSettings` has been explicitly set.
+  var hasCameraSettings: Bool {return self._cameraSettings != nil}
+  /// Clears the value of `cameraSettings`. Subsequent reads from it will return its default value.
+  mutating func clearCameraSettings() {self._cameraSettings = nil}
+
+  /// ResultSettings
+  var resultSettings: ResultSettings {
+    get {return _resultSettings ?? ResultSettings()}
+    set {_resultSettings = newValue}
+  }
+  /// Returns true if `resultSettings` has been explicitly set.
+  var hasResultSettings: Bool {return self._resultSettings != nil}
+  /// Clears the value of `resultSettings`. Subsequent reads from it will return its default value.
+  mutating func clearResultSettings() {self._resultSettings = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _cameraSettings: CameraSettings? = nil
+  fileprivate var _resultSettings: ResultSettings? = nil
+}
+
+/// protos/result_settings.proto
+struct ResultSettings: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Beep on Scan
+  var beepOnScan: Bool = false
+
+  /// Vibrate on Scan
+  var vibrateOnScan: Bool = false
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -194,6 +319,20 @@ extension BarcodeFormat: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
+extension ResolutionPreset: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "hd1280x720"),
+    1: .same(proto: "hd1920x1080"),
+  ]
+}
+
+extension CameraPosition: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "font"),
+    1: .same(proto: "back"),
+  ]
+}
+
 extension ResultType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "Barcode"),
@@ -202,10 +341,11 @@ extension ResultType: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
-extension Configuration: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "Configuration"
+extension CameraSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "CameraSettings"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "restrictFormat"),
+    1: .same(proto: "resolutionPreset"),
+    2: .same(proto: "cameraPosition"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -214,21 +354,112 @@ extension Configuration: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeRepeatedEnumField(value: &self.restrictFormat) }()
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.resolutionPreset) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.cameraPosition) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.restrictFormat.isEmpty {
-      try visitor.visitPackedEnumField(value: self.restrictFormat, fieldNumber: 1)
+    if self.resolutionPreset != .hd1280X720 {
+      try visitor.visitSingularEnumField(value: self.resolutionPreset, fieldNumber: 1)
+    }
+    if self.cameraPosition != .font {
+      try visitor.visitSingularEnumField(value: self.cameraPosition, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
+  static func ==(lhs: CameraSettings, rhs: CameraSettings) -> Bool {
+    if lhs.resolutionPreset != rhs.resolutionPreset {return false}
+    if lhs.cameraPosition != rhs.cameraPosition {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Configuration: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "Configuration"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "barcodeFormats"),
+    2: .same(proto: "cameraSettings"),
+    3: .same(proto: "resultSettings"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedEnumField(value: &self.barcodeFormats) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._cameraSettings) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._resultSettings) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.barcodeFormats.isEmpty {
+      try visitor.visitPackedEnumField(value: self.barcodeFormats, fieldNumber: 1)
+    }
+    try { if let v = self._cameraSettings {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._resultSettings {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
   static func ==(lhs: Configuration, rhs: Configuration) -> Bool {
-    if lhs.restrictFormat != rhs.restrictFormat {return false}
+    if lhs.barcodeFormats != rhs.barcodeFormats {return false}
+    if lhs._cameraSettings != rhs._cameraSettings {return false}
+    if lhs._resultSettings != rhs._resultSettings {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ResultSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "ResultSettings"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "beepOnScan"),
+    2: .same(proto: "vibrateOnScan"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.beepOnScan) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.vibrateOnScan) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.beepOnScan != false {
+      try visitor.visitSingularBoolField(value: self.beepOnScan, fieldNumber: 1)
+    }
+    if self.vibrateOnScan != false {
+      try visitor.visitSingularBoolField(value: self.vibrateOnScan, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ResultSettings, rhs: ResultSettings) -> Bool {
+    if lhs.beepOnScan != rhs.beepOnScan {return false}
+    if lhs.vibrateOnScan != rhs.vibrateOnScan {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

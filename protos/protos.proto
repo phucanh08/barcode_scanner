@@ -20,12 +20,38 @@ enum BarcodeFormat {
     upce = 10;
     pdf417 = 11;
 }
+// protos/camera_settings.proto
+enum ResolutionPreset {
+    hd1280x720 = 0;
+    hd1920x1080 = 1;
+}
+enum CameraPosition {
+    font = 0;
+    back = 1;
+}
+message CameraSettings {
+    // Resolution Preset
+    ResolutionPreset resolutionPreset = 1;
+    // Camera Position
+    CameraPosition cameraPosition = 2;
+}
 // protos/configuration.proto
 message Configuration {
     // Restricts the barcode format which should be read
-    repeated BarcodeFormat restrictFormat = 1;
+    repeated BarcodeFormat barcodeFormats = 1;
+    // CameraSettings
+    CameraSettings cameraSettings = 2;
+    // ResultSettings
+    ResultSettings resultSettings = 3;
 }
 
+// protos/result_settings.proto
+message ResultSettings {
+    // Beep on Scan
+    bool beepOnScan = 1;
+    // Vibrate on Scan
+    bool vibrateOnScan = 2;
+}
 // protos/scan_result.proto
 enum ResultType {
     Barcode = 0;

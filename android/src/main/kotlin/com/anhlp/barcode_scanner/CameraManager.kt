@@ -2,16 +2,15 @@ package com.anhlp.barcode_scanner
 
 import android.content.Context
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.util.Size
-import android.view.View
 import android.view.WindowManager
-import android.widget.ImageView
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageAnalysis.Analyzer
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.MeteringPointFactory
 import androidx.camera.core.Preview
 import androidx.camera.core.TorchState
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
@@ -24,10 +23,10 @@ import androidx.lifecycle.LifecycleOwner
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class BarcodeScannerViewController(private val context: Context, private val analyzer: Analyzer) {
+class CameraManager(private val context: Context) {
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageAnalyzer: ImageAnalysis? = null
-    private val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    private var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     private var backgroundExecutor: ExecutorService? = null
     private val rotation: Int =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) context.display.rotation else (context.getSystemService(
@@ -37,7 +36,11 @@ class BarcodeScannerViewController(private val context: Context, private val ana
     val previewView: PreviewView = PreviewView(context)
     var isPauseCamera = false
 
+    private var resolutionSize: Size = Size(1280, 720)
+
     private var camera: androidx.camera.core.Camera? = null
+
+    var delegate: CameraStreamDelegate? = null
 
     init {
         previewUseCase = Preview.Builder()
@@ -45,8 +48,29 @@ class BarcodeScannerViewController(private val context: Context, private val ana
             .build().also {
                 it.surfaceProvider = previewView.surfaceProvider
             }
-        startCamera()
     }
+
+    fun setCameraSetting(setting: Protos.CameraSettings) {
+        setResolutionPreset(setting.resolutionPreset)
+        setCameraPosition(setting.cameraPosition)
+    }
+
+    fun setResolutionPreset(resolutionPreset: Protos.ResolutionPreset) {
+        resolutionSize = when (resolutionPreset) {
+            Protos.ResolutionPreset.hd1280x720 -> Size(1280, 720)
+            Protos.ResolutionPreset.hd1920x1080 -> Size(1920, 1080)
+            else -> Size(1280, 720)
+        }
+    }
+
+    fun setCameraPosition(cameraPosition: Protos.CameraPosition) {
+        cameraSelector = when (cameraPosition) {
+            Protos.CameraPosition.font -> CameraSelector.DEFAULT_FRONT_CAMERA
+            Protos.CameraPosition.back -> CameraSelector.DEFAULT_BACK_CAMERA
+            else -> CameraSelector.DEFAULT_BACK_CAMERA
+        }
+    }
+
 
     /**
      * Kiểm tra xem đèn flash có đang bật không
@@ -92,7 +116,7 @@ class BarcodeScannerViewController(private val context: Context, private val ana
     }
 
     fun pauseCameraPreview() {
-        if(isPauseCamera) return
+        if (isPauseCamera) return
         isPauseCamera = true
     }
 
@@ -105,7 +129,7 @@ class BarcodeScannerViewController(private val context: Context, private val ana
             val resolutionSelector = ResolutionSelector.Builder()
                 .setResolutionStrategy(
                     ResolutionStrategy(
-                        Size(1920, 1080),
+                        resolutionSize,
                         ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
                     )
                 )
@@ -121,7 +145,7 @@ class BarcodeScannerViewController(private val context: Context, private val ana
                 .build()
                 .also {
                     backgroundExecutor?.let { backgroundExecutor ->
-                        it.setAnalyzer(backgroundExecutor, analyzer)
+                        it.setAnalyzer(backgroundExecutor, this::didReceiveFrame)
                     }
                 }
 
@@ -153,7 +177,20 @@ class BarcodeScannerViewController(private val context: Context, private val ana
         return null
     }
 
+    private fun didReceiveFrame(imageProxy: ImageProxy) {
+        if (delegate == null) {
+            imageProxy.close()
+            return
+        }
+
+        delegate?.didReceiveFrame(imageProxy)
+    }
+
     companion object {
         private const val TAG = "BarcodeScannerViewController"
     }
+}
+
+interface CameraStreamDelegate {
+    fun didReceiveFrame(imageProxy: ImageProxy)
 }
