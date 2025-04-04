@@ -7,6 +7,7 @@ import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RectF
 import android.view.View
+import kotlin.math.*
 
 class BoundingBoxOverlay(context: Context) : View(context) {
     private val path = Path()
@@ -24,14 +25,27 @@ class BoundingBoxOverlay(context: Context) : View(context) {
         invalidate()
     }
 
-    fun setBoundingBox(rectF: RectF, imageWidth: Int, imageHeight: Int) {
+    fun setBoundingBox(rectF: RectF, imageWidth: Int, imageHeight: Int, isFitContain: Boolean) {
         val scaleX = width.toFloat() / imageWidth
         val scaleY = height.toFloat() / imageHeight
 
-        val scale = maxOf(scaleX, scaleY)
+        var scale: Float = 1f
+        var wLost: Float = 0f
+        var hLost: Float = 0f
 
-        val wLost = (imageWidth * scale - width) / 2f
-        val hLost = (imageHeight * scale - height) / 2f
+        if (isFitContain) {
+            scale = max(scaleX, scaleY)
+            wLost = (imageWidth * scale - width) / 2f
+            hLost = (imageHeight * scale - height) / 2f
+        } else {
+            scale = min(scaleX, scaleY)
+            if (scale == scaleY) {
+                wLost = (imageWidth * scale - width) / 2f
+            } else {
+                hLost = (imageHeight * scale - height) / 2f
+            }
+        }
+
 
         rect = Rect(
             (scale * rectF.left - wLost).toInt(),
@@ -46,6 +60,6 @@ class BoundingBoxOverlay(context: Context) : View(context) {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         path.reset()
-        rect?.let {canvas.drawRect(it, paint)}
+        rect?.let { canvas.drawRect(it, paint) }
     }
 }

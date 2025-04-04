@@ -6,15 +6,28 @@ class BoundingBoxOverlay: UIView {
         setNeedsDisplay()
     }
     
-    public func setBoundingBox(_ rect: CGRect, imageSize: CGSize) {
+    public func setBoundingBox(_ rect: CGRect, imageSize: CGSize, isFitContain: Bool) {
         let imageViewSize = self.bounds.size
         
         let scaleX = imageViewSize.width / imageSize.width
         let scaleY = imageViewSize.height / imageSize.height
-        let scale = min(scaleX, scaleY)
         
-        let wLost = (scale == scaleY) ? (imageSize.width * scale - imageViewSize.width) / 2 : 0
-        let hLost = (scale == scaleY) ? 0 : (imageSize.height * scale - imageViewSize.height) / 2
+        var scale: CGFloat = 1
+        var wLost: CGFloat = 0
+        var hLost: CGFloat = 0
+        
+        if (isFitContain) {
+            scale = max(scaleX, scaleY)
+            wLost = (imageSize.width * scale - imageViewSize.width) / 2
+            hLost = (imageSize.height * scale - imageViewSize.height) / 2
+        } else {
+            scale = min(scaleX, scaleY)
+            if (scale == scaleY) {
+                wLost = (imageSize.width * scale - imageViewSize.width) / 2
+            } else {
+                hLost = (imageSize.height * scale - imageViewSize.height) / 2
+            }
+        }
         
         let x = rect.origin.x * imageSize.width * scale - wLost
         let y = rect.origin.y * imageSize.height * scale - hLost

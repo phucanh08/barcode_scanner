@@ -116,8 +116,12 @@ internal class BarcodeScannerView(
                     pauseCameraPreview()
                 }
                 isDetectingByPath = true
-                val res = barcodeScanner.zxingProcess(bitmap)
-                val list = listOfNotNull(res?.text)
+                var rawData: String? = null
+                rawData = barcodeScanner.mlKitBarcodeScannerProcess(bitmap)
+                if(rawData == null) {
+                    rawData = barcodeScanner.zxingProcess(bitmap)
+                }
+                val list = listOfNotNull(rawData)
                 result.success(list)
             } catch (e: Exception) {
                 result.error("BARCODE_DETECTION_ERROR", e.message, null)
@@ -151,6 +155,8 @@ internal class BarcodeScannerView(
     }
 
     override fun didUpdateBoundingBoxOverlay(rectF: RectF?, bitmap: Bitmap?) {
+        val isDetectingByPath = isDetectingByPath
+
         CoroutineScope(Dispatchers.Main).launch {
         if (isDetectingByPath) {
             cameraManager.previewView.visibility = View.INVISIBLE
@@ -172,7 +178,7 @@ internal class BarcodeScannerView(
             pauseCameraPreview()
         }
 
-        boundingBoxOverlay.setBoundingBox(rectF, bitmap.width, bitmap.height)
+        boundingBoxOverlay.setBoundingBox(rectF, bitmap.width, bitmap.height, !isDetectingByPath)
     }
 
     override fun didScanBarcodeWithResult(scanResult: Protos.ScanResult) {

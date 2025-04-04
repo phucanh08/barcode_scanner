@@ -80,7 +80,7 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
         }
         
         let imageSize = size ?? cameraManager.getSize()
-        boundingBoxOverlay.setBoundingBox(boundingBox, imageSize: imageSize)
+        boundingBoxOverlay.setBoundingBox(boundingBox, imageSize: imageSize, isFitContain: size == nil)
     }
     
     func didScanBarcodeWithResults(_ results: [ScanResult]) {

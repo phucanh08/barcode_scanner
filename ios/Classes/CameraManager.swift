@@ -60,6 +60,7 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
         setupCamera()
         
         previewLayer = AVCaptureVideoPreviewLayer(session: currentSession!)
+        previewLayer?.videoGravity = .resizeAspectFill
         previewView?.layer.addSublayer(previewLayer!)
         previewLayer?.frame = previewView?.bounds ?? CGRect.zero
         

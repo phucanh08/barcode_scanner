@@ -6,6 +6,7 @@ import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
 import androidx.core.graphics.toRectF
+import com.google.android.gms.tasks.Tasks
 import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import kotlinx.coroutines.*
@@ -19,11 +20,6 @@ class BarcodeScanner() {
     private var isZxingProcessing = false
 
     var delegate: BarcodeScanDelegate? = null
-
-    init {
-        initMLKitBarcodeScanner()
-        initMultiFormatReader()
-    }
 
     fun setFormats(barcodeFormats: List<Protos.BarcodeFormat>) {
         this.barcodeFormats = barcodeFormats
@@ -60,47 +56,49 @@ class BarcodeScanner() {
         this.mMultiFormatReader!!.setHints(hints)
     }
 
-    private var timeMlKit: Long = 0
-
+    @OptIn(ExperimentalGetImage::class)
     fun process(imageProxy: ImageProxy) {
         coroutineScope.launch {
-            val bitmap =
-                if ((SystemClock.uptimeMillis() - timeMlKit) > 1000 && !isZxingProcessing) imageProxy.toBitmap() else null
-            launch(Dispatchers.IO) { mlKitBarcodeScannerProcess(imageProxy) }
-            if (bitmap != null) {
-                launch(Dispatchers.IO) {
-                    isZxingProcessing = true
-                    zxingProcess(bitmap)
-                    isZxingProcessing = false
+            val image = imageProxy.image
+            if (image == null) {
+                imageProxy.close()
+            }
+            try {
+                val inputImage = com.google.mlkit.vision.common.InputImage.fromMediaImage(
+                    image!!, imageProxy.imageInfo.rotationDegrees
+                )
+                val barcodes = Tasks.await(mlKitBarcodeScanner.process(inputImage))
+                if (barcodes.isNotEmpty()) {
+                    barcodes[0].cornerPoints
+                    handleMlKitResult(barcodes[0], imageProxy.toBitmap())
+                    return@launch
                 }
+
+                val bitmap = imageProxy.toBitmap()
+                zxingProcess(bitmap)
+
+            } finally {
+                imageProxy.close()
             }
         }
     }
 
-    @OptIn(ExperimentalGetImage::class)
-    private fun mlKitBarcodeScannerProcess(imageProxy: ImageProxy) {
-        val image = imageProxy.image
-        if (image == null) {
-            imageProxy.close()
-        }
-        val inputImage =
-            com.google.mlkit.vision.common.InputImage.fromMediaImage(
-                image!!,
-                imageProxy.imageInfo.rotationDegrees
-            )
-        mlKitBarcodeScanner.process(inputImage).addOnSuccessListener {
-            if (it.isNotEmpty()) {
-                timeMlKit = SystemClock.uptimeMillis()
-                handleMlKitResult(it[0], imageProxy.toBitmap())
-            }
-        }.addOnCompleteListener {
-            imageProxy.close()
-        }
-    }
-
-    fun zxingProcess(originBitmap: Bitmap): Result? {
+    fun mlKitBarcodeScannerProcess(originBitmap: Bitmap): String? {
         var bitmap = ImageUtils.toGrayscale(originBitmap)
+        try {
+            val inputImage = com.google.mlkit.vision.common.InputImage.fromBitmap(bitmap, 0)
+            val barcodes = Tasks.await(mlKitBarcodeScanner.process(inputImage))
+            if (!barcodes.isEmpty()) {
+                handleMlKitResult(barcodes[0], originBitmap)
+                return barcodes[0].rawValue
+            }
+        } catch (_: Exception) {
+        }
+        return null
+    }
 
+    fun zxingProcess(originBitmap: Bitmap): String? {
+        var bitmap = ImageUtils.toGrayscale(originBitmap)
         val width = bitmap.width
         val height = bitmap.height
         val pixels = IntArray(width * height)
@@ -119,7 +117,7 @@ class BarcodeScanner() {
                     delegate?.didUpdateBoundingBoxOverlay(null)
                 }
             }
-            return rawResult
+            return rawResult?.text
         } catch (_: NotFoundException) {
             CoroutineScope(Dispatchers.Main).launch {
                 delegate?.didUpdateBoundingBoxOverlay(null)
@@ -130,9 +128,7 @@ class BarcodeScanner() {
                 delegate?.didUpdateBoundingBoxOverlay(null)
             }
             delegate?.didFailWithErrorCode(
-                "SCAN_ERROR",
-                "An error occurred while scanning the barcode: ${e.message}",
-                e
+                "SCAN_ERROR", "An error occurred while scanning the barcode: ${e.message}", e
             )
         } finally {
             mMultiFormatReader?.reset()
