@@ -1,6 +1,6 @@
 name: barcode_scanner
-description: "A new Flutter project to use platform view with iOS: https://github.com/mikebuss/MTBBarcodeScanner and Android: https://github.com/dm77/barcodescanner"
-version: 0.0.1
+description: "A new Flutter project to use platform view for barcode scan"
+version: 0.0.4
 homepage: https://github.com/phucanh08/barcode_scanner
 repository: https://github.com/phucanh08/barcode_scanner
 
