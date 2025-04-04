@@ -27,11 +27,11 @@ abstract class BarcodeScannerPlatform extends PlatformInterface {
   }
 
   /// The method channel used to interact with the native platform.
-  MethodChannel? methodChannel;
   Completer<MethodChannel> methodChannelComparator = Completer();
 
   void init(int platformViewId) {
-    methodChannel =
+    methodChannelComparator = Completer();
+    final methodChannel =
         MethodChannel('com.anhlp.barcode_scanner/methods_$platformViewId');
     methodChannelComparator.complete(methodChannel);
   }
