@@ -4,7 +4,8 @@ import 'barcode_scanner_platform_interface.dart';
 class MethodChannelBarcodeScanner extends BarcodeScannerPlatform {
   @override
   Future<List<String>?> detectBarcodesByImagePath(String imagePath) async {
-    final result = await methodChannel?.invokeMethod<List<dynamic>>(
+    final methodChannel = await methodChannelComparator.future;
+    final result = await methodChannel.invokeMethod<List<dynamic>>(
         'detectBarcodesByImagePath', imagePath);
     return result?.cast<String>();
   }
