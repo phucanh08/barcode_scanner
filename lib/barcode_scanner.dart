@@ -2,9 +2,10 @@ export 'barcode_scanner_view.dart';
 export 'gen/protos/protos.pb.dart';
 
 import 'barcode_scanner_platform_interface.dart';
+import 'gen/protos/protos.pb.dart';
 
 class BarcodeScanner {
-  Future<List<String>?> detectBarcodesByImagePath(String imagePath) {
+  Future<List<BarcodeResult>?> detectBarcodesByImagePath(String imagePath) {
     return BarcodeScannerPlatform.instance.detectBarcodesByImagePath(imagePath);
   }
 

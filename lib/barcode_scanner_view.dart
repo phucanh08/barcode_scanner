@@ -19,7 +19,7 @@ class BarcodeScannerView extends StatefulWidget {
     required this.options,
   }) : super(key: key);
 
-  final void Function(ScanResult)? onData;
+  final void Function(BarcodeResult)? onData;
   final void Function(String)? onError;
   final Configuration options;
 
@@ -37,18 +37,18 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
     streamSubscription = eventChannel.receiveBroadcastStream().listen((event) {
       try {
         if (event != null) {
-          final tmpResult = ScanResult.fromBuffer(event);
-          widget.onData?.call(ScanResult(
-            format: tmpResult.format,
-            formatNote: tmpResult.formatNote,
-            rawContent: tmpResult.rawContent,
-            type: tmpResult.type,
-          ));
+          final barcodes =
+              (event as List<dynamic>).map((e) => BarcodeResult.fromBuffer(e));
+          if (barcodes.isNotEmpty) {
+            for (var barcode in barcodes) {
+              debugPrint('Barcode data: ${barcode.toProto3Json()}');
+
+              widget.onData?.call(barcode);
+            }
+          }
         }
       } catch (e) {
-        if (kDebugMode) {
-          print('Error receiving event: $e');
-        }
+        debugPrint('Error receiving event: $e');
         widget.onError?.call(e.toString());
       }
     });

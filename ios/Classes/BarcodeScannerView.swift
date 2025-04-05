@@ -1,7 +1,7 @@
 import Flutter
 import AVFoundation
 
-class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelegate, BarcodeScannerDelegate {
+class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelegate {
     private let _view: UIView
     private let imageView = UIImageView()
     private let boundingBoxOverlay = BoundingBoxOverlay()
@@ -42,7 +42,6 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
         methodChannel.setMethodCallHandler (self.methodChanelHandler)
         eventChannel.setStreamHandler(eventChannelHandler)
         
-        barcodeScanner.delegate = self
         cameraManager.delegate = self
         
         do {
@@ -61,39 +60,45 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
     
     func didReceiveSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
         DispatchQueue.global(qos: .userInitiated).async {
-            self.barcodeScanner.process(sampleBuffer: sampleBuffer)
+            let results = self.barcodeScanner.process(sampleBuffer)
+            if (!results.isEmpty) {
+                let boundingBox = results[0].boundingBox
+                let rect = CGRect(x: CGFloat(boundingBox.left), y: CGFloat(boundingBox.top), width: CGFloat(boundingBox.right - boundingBox.left), height: CGFloat(boundingBox.bottom - boundingBox.top))
+                
+                DispatchQueue.main.async {
+                    self.didUpdateBoundingBoxOverlay(rect)
+                    self.didScanBarcodeWithResults(results)
+                }
+            }
         }
+        
     }
     
-    func didUpdateBoundingBoxOverlay(_ rect: CGRect?, size: CGSize? = nil) {
+    private func didUpdateBoundingBoxOverlay(_ rect: CGRect?, size: CGSize? = nil) {
         if (cameraManager.isPauseCamera && !isProcessingImagePath) { return }
         
-        guard var boundingBox = rect else {
+        guard let boundingBox = rect else {
             boundingBoxOverlay.clear()
             return
         }
         
         self.cameraManager.pauseCameraPreview()
         
-        if (size == nil) {
-            boundingBox = CGRect(x: 1 - boundingBox.origin.y - boundingBox.height, y: boundingBox.origin.x, width: boundingBox.height, height: boundingBox.width)
-        }
-        
         let imageSize = size ?? cameraManager.getSize()
         boundingBoxOverlay.setBoundingBox(boundingBox, imageSize: imageSize, isFitContain: size == nil)
     }
     
-    func didScanBarcodeWithResults(_ results: [ScanResult]) {
+    private func didScanBarcodeWithResults(_ results: [BarcodeResult]) {
         do {
             if(!results.isEmpty) {
-                eventChannelHandler.eventSink?(try results.first!.serializedData())
+                eventChannelHandler.eventSink?(try results.map { try $0.serializedData() })
             }
         } catch {
             eventChannelHandler.eventSink?(FlutterError(code: "err_serialize", message: "Failed to serialize the result", details: nil))
         }
     }
     
-    func didFailWithErrorCode(_ code: String, _ message: String, _ details: Any?) {
+    private func didFailWithErrorCode(_ code: String, _ message: String, _ details: Any?) {
         eventChannelHandler.eventSink?(FlutterError(code: code, message: message, details: details))
     }
 }
@@ -135,36 +140,48 @@ extension BarcodeScannerView {
     }
     
     private func detectBarcodesByImagePath(_ path: String, result: @escaping FlutterResult) {
-        isProcessingImagePath = true
-        let fileURL = URL(fileURLWithPath: path)
-        
-        guard let image = UIImage(contentsOfFile: fileURL.path)?.fixOrientation() else {
-            print("Không thể tải hình ảnh từ đường dẫn: \(path)")
-            result(FlutterError(code: "INVALID_IMAGE", message: "Không thể tải hình ảnh từ đường dẫn: \(path)", details: nil))
-            return
-        }
-        
-        DispatchQueue.main.async {
-            self.imageView.image = image
-            self.imageView.isHidden = false
-            self.cameraManager.view.isHidden = true
-        }
-        
-        
-        let barcodes = self.barcodeScanner.process(image)
-        
-        DispatchQueue.main.async {
-            if barcodes.isEmpty {
-                print("❌ Không tìm thấy barcode nào")
-            } else {
-                for barcode in barcodes {
-                    print("✅ Barcode detected: \(barcode.rawContent)")
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.isProcessingImagePath = true
+            let fileURL = URL(fileURLWithPath: path)
+            
+            guard let image = UIImage(contentsOfFile: fileURL.path)?.fixOrientation() else {
+                print("Không thể tải hình ảnh từ đường dẫn: \(path)")
+                result(FlutterError(code: "INVALID_IMAGE", message: "Không thể tải hình ảnh từ đường dẫn: \(path)", details: nil))
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.imageView.image = image
+                self.imageView.isHidden = false
+                self.cameraManager.view.isHidden = true
+            }
+            
+            
+            let barcodes = self.barcodeScanner.process(image)
+            
+            DispatchQueue.main.async {
+                if barcodes.isEmpty {
+                    print("❌ Không tìm thấy barcode nào")
+                } else {
+                    let boundingBox = barcodes[0].boundingBox
+                    let width = CGFloat(boundingBox.right - boundingBox.left)
+                    let height = CGFloat(boundingBox.bottom - boundingBox.top)
+                    let rect = CGRect(x: CGFloat(boundingBox.top), y: 1 - CGFloat(boundingBox.right), width: height, height: width)
+                    
+                    
+                    DispatchQueue.main.async {
+                        self.didUpdateBoundingBoxOverlay(rect, size: image.size)
+                    }
+                }
+                do {
+                    result(try barcodes.map { try $0.serializedData() })
+                } catch {
+                    print("❌ Lỗi chuyển đổi dữ liệu: result(try barcodes.map { try $0.serializedData() })")
                 }
             }
-            result(barcodes.map { $0.rawContent })
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.isProcessingImagePath = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.isProcessingImagePath = false
+            }
         }
         
     }

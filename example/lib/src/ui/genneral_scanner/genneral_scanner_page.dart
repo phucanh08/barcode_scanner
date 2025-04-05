@@ -22,7 +22,7 @@ class GeneralScannerPage extends StatelessWidget {
           final results =
               await BarcodeScanner().detectBarcodesByImagePath(image.path);
           for (var e in results ?? []) {
-            debugPrint("Mã vạch phát hiện: $e");
+            debugPrint("Mã vạch phát hiện: ${e.toString()}");
           }
         } else {
           BarcodeScanner().resumeCamera();
@@ -96,7 +96,7 @@ class GeneralScannerPage extends StatelessWidget {
               ),
             ),
             onData: (data) {
-              debugPrint('Barcode data: ${data.rawContent}');
+              debugPrint('Barcode data: ${data.toProto3Json()}');
             },
           ),
           const Positioned(top: 100, left: 20, child: FlashButton()),

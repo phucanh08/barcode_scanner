@@ -5,98 +5,56 @@ import UIKit
 class BarcodeScanner {
     private var currentRequests: [VNRequest] = []
     private var barcodeFormats: [VNBarcodeSymbology] = []
-    var delegate: BarcodeScannerDelegate?
     
     func setFormats(_ formats: [BarcodeFormat]) {
         self.barcodeFormats = convertFormats(formats)
     }
     
-    func process(sampleBuffer: CMSampleBuffer) {
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+    func process(_ sampleBuffer: CMSampleBuffer) -> [BarcodeResult] {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return []}
         
-        let request = VNDetectBarcodesRequest { [weak self] request, error in
-            _ = self?.handleDetectionResults(request: request, error: error)
+        let request = VNDetectBarcodesRequest()
+        
+        
+        do {
+            request.symbologies = barcodeFormats
+            
+            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+            
+            try handler.perform([request])
+            
+            let result = request.results?.compactMap { observation in observation.toBarcodeResult() }
+            
+            return result ?? []
+            
+        } catch {
+            print("❌ Lỗi xử lý ảnh: \(error)")
         }
-        request.symbologies = self.barcodeFormats
-        
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-        try? handler.perform([request])
+        return []
     }
     
-    func process(_ image: UIImage) -> [ScanResult] {
+    func process(_ image: UIImage) -> [BarcodeResult] {
         guard let ciImage = CIImage(image: image) else {
             print("Không thể tạo CIImage từ UIImage.")
             return []
         }
         
         let request = VNDetectBarcodesRequest()
+        
         do {
             request.symbologies = barcodeFormats
             
             let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
             
             try handler.perform([request])
-            return handleDetectionResults(request: request, error: nil, size: image.size)
+            
+            let result = request.results?.compactMap { observation in observation.toBarcodeResult() }
+            return result ?? []
+            
         } catch {
             print("❌ Lỗi xử lý ảnh: \(error)")
-            return handleDetectionResults(request: request, error: error, size: image.size)
         }
-    }
-    
-    private func handleDetectionResults(request: VNRequest, error: Error?, size: CGSize? = nil) -> [ScanResult] {
-        guard let results = request.results as? [VNBarcodeObservation] else {
-            self.delegate?.didFailWithErrorCode("DETECTION_ERROR", error?.localizedDescription ?? "Lỗi Detect", error)
-            return []
-        }
-        
-        var rect: CGRect? = nil
-        
-        if let barcode = results.first {
-            rect = convertToViewCoordinates(normalizedRect: barcode.boundingBox)
-        }
-        DispatchQueue.main.async {
-            self.delegate?.didUpdateBoundingBoxOverlay(rect, size: size)
-        }
-        
-        var scanResults: [ScanResult] = []
-        
-        
-        for barcode in results {
-            let format = convertSymbology(barcode.symbology)
-            let rawContent = barcode.payloadStringValue ?? ""
-            
-            let scanResult = ScanResult.with {
-                $0.type = .barcode
-                $0.rawContent = rawContent
-                $0.format = format
-                $0.formatNote = barcode.symbology.rawValue
-            }
-            
-            scanResults.append(scanResult)
-        }
-        
-        DispatchQueue.main.async {
-            self.delegate?.didScanBarcodeWithResults(scanResults)
-        }
-        
-        return scanResults
-    }
-    
-    
-    private func convertSymbology(_ symbology: VNBarcodeSymbology) -> BarcodeFormat {
-        switch symbology {
-        case .qr: return .qr
-        case .code39, .code39Checksum: return .code39
-        case .code128: return .code128
-        case .code93, .code93i: return .code93
-        case .ean8: return .ean8
-        case .ean13: return .ean13
-        case .upce: return .upce
-        case .aztec: return .aztec
-        case .pdf417: return .pdf417
-        case .dataMatrix: return .dataMatrix
-        default: return .unknown
-        }
+        return []
     }
     
     private func convertFormats(_ formats: [BarcodeFormat]) -> [VNBarcodeSymbology] {
@@ -109,7 +67,7 @@ class BarcodeScanner {
             case .dataMatrix: return .dataMatrix
             case .ean8: return .ean8
             case .ean13: return .ean13
-            case .interleaved2Of5: return .i2of5
+            case .itf: return .i2of5
             case .pdf417: return .pdf417
             case .qr: return .qr
             case .upce: return .upce
@@ -117,19 +75,83 @@ class BarcodeScanner {
             }
         }
     }
-    
-    private func convertToViewCoordinates(normalizedRect: CGRect) -> CGRect {
-        return CGRect(
-            x: normalizedRect.origin.x,
-            y: 1 - normalizedRect.origin.y - normalizedRect.height,
-            width: normalizedRect.width,
-            height: normalizedRect.height
+}
+
+extension VNBarcodeObservation {
+    func toBarcodeResult() -> BarcodeResult {
+        let observation = self
+        let format = observation.symbology.toBarcodeFormat()
+        let rect = CGRect(
+            x: observation.boundingBox.origin.y,
+            y: observation.boundingBox.origin.x,
+            width: observation.boundingBox.height,
+            height: observation.boundingBox.width
         )
+        let boundingBox = Rect.with {
+            $0.left = Float(rect.origin.x)
+            $0.top = Float(rect.origin.y)
+            $0.right = Float(rect.origin.x + rect.width)
+            $0.bottom = Float(rect.origin.y + rect.height)
+        }
+        
+        let barcode = BarcodeResult.with {
+            $0.format = format
+            $0.rawValue = observation.payloadStringValue ?? ""
+            if #available(iOS 17.0, *) {
+                $0.rawBytes = observation.payloadData ?? Data()
+            }
+            $0.boundingBox = boundingBox
+            $0.cornerPoints = [
+                Point.with {
+                    $0.x = Float(observation.topLeft.x)
+                    $0.y = Float(observation.topLeft.y)
+                },
+                Point.with {
+                    $0.x = Float(observation.topRight.x)
+                    $0.y = Float(observation.topRight.y)
+                },
+                Point.with {
+                    $0.x = Float(observation.bottomRight.x)
+                    $0.y = Float(observation.bottomRight.y)
+                },
+                Point.with {
+                    $0.x = Float(observation.bottomLeft.x)
+                    $0.y = Float(observation.bottomLeft.y)
+                }
+            ]
+            $0.timestamp = Int64(Date().timeIntervalSince1970)
+        }
+        
+        return barcode
     }
 }
 
-protocol BarcodeScannerDelegate: AnyObject {
-    func didUpdateBoundingBoxOverlay(_ rect: CGRect?, size: CGSize?)
-    func didScanBarcodeWithResults(_ results: [ScanResult])
-    func didFailWithErrorCode(_ code: String, _ message: String, _ details: Any?)
+
+extension VNBarcodeSymbology {
+    func toBarcodeFormat() -> BarcodeFormat {
+        switch self {
+        case .code39, .code39Checksum, .code39FullASCII, .code39FullASCIIChecksum: return BarcodeFormat.code39
+        case .code93, .code93i: return BarcodeFormat.code93
+        case .code128: return BarcodeFormat.code128
+        case .i2of5, .i2of5Checksum, .itf14: return BarcodeFormat.itf
+        case .upce: return BarcodeFormat.upce
+        case .ean8: return BarcodeFormat.ean8
+        case .ean13: return BarcodeFormat.ean13
+        case .qr: return BarcodeFormat.qr
+        case .pdf417: return BarcodeFormat.pdf417
+        case .dataMatrix: return BarcodeFormat.dataMatrix
+        case .aztec: return BarcodeFormat.aztec
+        default:
+            if #available(iOS 15.0, *) {
+                switch self {
+                case VNBarcodeSymbology.codabar: return .codaBar
+                case VNBarcodeSymbology.gs1DataBar: return .gs1DataBar
+                case VNBarcodeSymbology.gs1DataBarExpanded: return .gs1DataBarExtended
+                default: break
+                }
+            }
+            return .unknown
+        }
+        
+    }
 }

@@ -15,32 +15,42 @@ import 'package:protobuf/protobuf.dart' as $pb;
 
 /// protos/barcode_format.proto
 class BarcodeFormat extends $pb.ProtobufEnum {
-  static const BarcodeFormat unknown = BarcodeFormat._(0, _omitEnumNames ? '' : 'unknown');
-  static const BarcodeFormat aztec = BarcodeFormat._(1, _omitEnumNames ? '' : 'aztec');
-  static const BarcodeFormat code39 = BarcodeFormat._(2, _omitEnumNames ? '' : 'code39');
-  static const BarcodeFormat code93 = BarcodeFormat._(3, _omitEnumNames ? '' : 'code93');
-  static const BarcodeFormat ean8 = BarcodeFormat._(4, _omitEnumNames ? '' : 'ean8');
-  static const BarcodeFormat ean13 = BarcodeFormat._(5, _omitEnumNames ? '' : 'ean13');
-  static const BarcodeFormat code128 = BarcodeFormat._(6, _omitEnumNames ? '' : 'code128');
-  static const BarcodeFormat dataMatrix = BarcodeFormat._(7, _omitEnumNames ? '' : 'dataMatrix');
-  static const BarcodeFormat qr = BarcodeFormat._(8, _omitEnumNames ? '' : 'qr');
-  static const BarcodeFormat interleaved2of5 = BarcodeFormat._(9, _omitEnumNames ? '' : 'interleaved2of5');
-  static const BarcodeFormat upce = BarcodeFormat._(10, _omitEnumNames ? '' : 'upce');
-  static const BarcodeFormat pdf417 = BarcodeFormat._(11, _omitEnumNames ? '' : 'pdf417');
+  static const BarcodeFormat all = BarcodeFormat._(0, _omitEnumNames ? '' : 'all');
+  /// 1D Barcode
+  static const BarcodeFormat code39 = BarcodeFormat._(1, _omitEnumNames ? '' : 'code39');
+  static const BarcodeFormat code93 = BarcodeFormat._(2, _omitEnumNames ? '' : 'code93');
+  static const BarcodeFormat code128 = BarcodeFormat._(3, _omitEnumNames ? '' : 'code128');
+  static const BarcodeFormat itf = BarcodeFormat._(4, _omitEnumNames ? '' : 'itf');
+  static const BarcodeFormat upce = BarcodeFormat._(5, _omitEnumNames ? '' : 'upce');
+  static const BarcodeFormat ean8 = BarcodeFormat._(6, _omitEnumNames ? '' : 'ean8');
+  static const BarcodeFormat ean13 = BarcodeFormat._(7, _omitEnumNames ? '' : 'ean13');
+  static const BarcodeFormat codaBar = BarcodeFormat._(8, _omitEnumNames ? '' : 'codaBar');
+  static const BarcodeFormat gs1DataBar = BarcodeFormat._(9, _omitEnumNames ? '' : 'gs1DataBar');
+  static const BarcodeFormat gs1DataBarExtended = BarcodeFormat._(10, _omitEnumNames ? '' : 'gs1DataBarExtended');
+  /// 2D Barcode
+  static const BarcodeFormat qr = BarcodeFormat._(11, _omitEnumNames ? '' : 'qr');
+  static const BarcodeFormat pdf417 = BarcodeFormat._(12, _omitEnumNames ? '' : 'pdf417');
+  static const BarcodeFormat dataMatrix = BarcodeFormat._(13, _omitEnumNames ? '' : 'dataMatrix');
+  static const BarcodeFormat aztec = BarcodeFormat._(14, _omitEnumNames ? '' : 'aztec');
+  static const BarcodeFormat unknown = BarcodeFormat._(15, _omitEnumNames ? '' : 'unknown');
 
   static const $core.List<BarcodeFormat> values = <BarcodeFormat> [
-    unknown,
-    aztec,
+    all,
     code39,
     code93,
+    code128,
+    itf,
+    upce,
     ean8,
     ean13,
-    code128,
-    dataMatrix,
+    codaBar,
+    gs1DataBar,
+    gs1DataBarExtended,
     qr,
-    interleaved2of5,
-    upce,
     pdf417,
+    dataMatrix,
+    aztec,
+    unknown,
   ];
 
   static final $core.Map<$core.int, BarcodeFormat> _byValue = $pb.ProtobufEnum.initByValue(values);

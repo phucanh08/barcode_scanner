@@ -17,26 +17,31 @@ import 'dart:typed_data' as $typed_data;
 const BarcodeFormat$json = {
   '1': 'BarcodeFormat',
   '2': [
-    {'1': 'unknown', '2': 0},
-    {'1': 'aztec', '2': 1},
-    {'1': 'code39', '2': 2},
-    {'1': 'code93', '2': 3},
-    {'1': 'ean8', '2': 4},
-    {'1': 'ean13', '2': 5},
-    {'1': 'code128', '2': 6},
-    {'1': 'dataMatrix', '2': 7},
-    {'1': 'qr', '2': 8},
-    {'1': 'interleaved2of5', '2': 9},
-    {'1': 'upce', '2': 10},
-    {'1': 'pdf417', '2': 11},
+    {'1': 'all', '2': 0},
+    {'1': 'code39', '2': 1},
+    {'1': 'code93', '2': 2},
+    {'1': 'code128', '2': 3},
+    {'1': 'itf', '2': 4},
+    {'1': 'upce', '2': 5},
+    {'1': 'ean8', '2': 6},
+    {'1': 'ean13', '2': 7},
+    {'1': 'codaBar', '2': 8},
+    {'1': 'gs1DataBar', '2': 9},
+    {'1': 'gs1DataBarExtended', '2': 10},
+    {'1': 'qr', '2': 11},
+    {'1': 'pdf417', '2': 12},
+    {'1': 'dataMatrix', '2': 13},
+    {'1': 'aztec', '2': 14},
+    {'1': 'unknown', '2': 15},
   ],
 };
 
 /// Descriptor for `BarcodeFormat`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List barcodeFormatDescriptor = $convert.base64Decode(
-    'Cg1CYXJjb2RlRm9ybWF0EgsKB3Vua25vd24QABIJCgVhenRlYxABEgoKBmNvZGUzORACEgoKBm'
-    'NvZGU5MxADEggKBGVhbjgQBBIJCgVlYW4xMxAFEgsKB2NvZGUxMjgQBhIOCgpkYXRhTWF0cml4'
-    'EAcSBgoCcXIQCBITCg9pbnRlcmxlYXZlZDJvZjUQCRIICgR1cGNlEAoSCgoGcGRmNDE3EAs=');
+    'Cg1CYXJjb2RlRm9ybWF0EgcKA2FsbBAAEgoKBmNvZGUzORABEgoKBmNvZGU5MxACEgsKB2NvZG'
+    'UxMjgQAxIHCgNpdGYQBBIICgR1cGNlEAUSCAoEZWFuOBAGEgkKBWVhbjEzEAcSCwoHY29kYUJh'
+    'chAIEg4KCmdzMURhdGFCYXIQCRIWChJnczFEYXRhQmFyRXh0ZW5kZWQQChIGCgJxchALEgoKBn'
+    'BkZjQxNxAMEg4KCmRhdGFNYXRyaXgQDRIJCgVhenRlYxAOEgsKB3Vua25vd24QDw==');
 
 @$core.Deprecated('Use resolutionPresetDescriptor instead')
 const ResolutionPreset$json = {
@@ -77,6 +82,56 @@ const ResultType$json = {
 /// Descriptor for `ResultType`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List resultTypeDescriptor = $convert.base64Decode(
     'CgpSZXN1bHRUeXBlEgsKB0JhcmNvZGUQABINCglDYW5jZWxsZWQQARIJCgVFcnJvchAC');
+
+@$core.Deprecated('Use barcodeResultDescriptor instead')
+const BarcodeResult$json = {
+  '1': 'BarcodeResult',
+  '2': [
+    {'1': 'format', '3': 1, '4': 1, '5': 14, '6': '.BarcodeFormat', '10': 'format'},
+    {'1': 'rawValue', '3': 2, '4': 1, '5': 9, '10': 'rawValue'},
+    {'1': 'rawBytes', '3': 3, '4': 1, '5': 12, '10': 'rawBytes'},
+    {'1': 'boundingBox', '3': 4, '4': 1, '5': 11, '6': '.Rect', '10': 'boundingBox'},
+    {'1': 'cornerPoints', '3': 5, '4': 3, '5': 11, '6': '.Point', '10': 'cornerPoints'},
+    {'1': 'timestamp', '3': 6, '4': 1, '5': 3, '10': 'timestamp'},
+  ],
+};
+
+/// Descriptor for `BarcodeResult`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List barcodeResultDescriptor = $convert.base64Decode(
+    'Cg1CYXJjb2RlUmVzdWx0EiYKBmZvcm1hdBgBIAEoDjIOLkJhcmNvZGVGb3JtYXRSBmZvcm1hdB'
+    'IaCghyYXdWYWx1ZRgCIAEoCVIIcmF3VmFsdWUSGgoIcmF3Qnl0ZXMYAyABKAxSCHJhd0J5dGVz'
+    'EicKC2JvdW5kaW5nQm94GAQgASgLMgUuUmVjdFILYm91bmRpbmdCb3gSKgoMY29ybmVyUG9pbn'
+    'RzGAUgAygLMgYuUG9pbnRSDGNvcm5lclBvaW50cxIcCgl0aW1lc3RhbXAYBiABKANSCXRpbWVz'
+    'dGFtcA==');
+
+@$core.Deprecated('Use rectDescriptor instead')
+const Rect$json = {
+  '1': 'Rect',
+  '2': [
+    {'1': 'left', '3': 1, '4': 1, '5': 2, '10': 'left'},
+    {'1': 'top', '3': 2, '4': 1, '5': 2, '10': 'top'},
+    {'1': 'right', '3': 3, '4': 1, '5': 2, '10': 'right'},
+    {'1': 'bottom', '3': 4, '4': 1, '5': 2, '10': 'bottom'},
+  ],
+};
+
+/// Descriptor for `Rect`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List rectDescriptor = $convert.base64Decode(
+    'CgRSZWN0EhIKBGxlZnQYASABKAJSBGxlZnQSEAoDdG9wGAIgASgCUgN0b3ASFAoFcmlnaHQYAy'
+    'ABKAJSBXJpZ2h0EhYKBmJvdHRvbRgEIAEoAlIGYm90dG9t');
+
+@$core.Deprecated('Use pointDescriptor instead')
+const Point$json = {
+  '1': 'Point',
+  '2': [
+    {'1': 'x', '3': 1, '4': 1, '5': 2, '10': 'x'},
+    {'1': 'y', '3': 2, '4': 1, '5': 2, '10': 'y'},
+  ],
+};
+
+/// Descriptor for `Point`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List pointDescriptor = $convert.base64Decode(
+    'CgVQb2ludBIMCgF4GAEgASgCUgF4EgwKAXkYAiABKAJSAXk=');
 
 @$core.Deprecated('Use cameraSettingsDescriptor instead')
 const CameraSettings$json = {

@@ -56,26 +56,33 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
     }
     
     func startCamera() {
-        currentSession = AVCaptureSession()
-        setupCamera()
-        
-        previewLayer = AVCaptureVideoPreviewLayer(session: currentSession!)
-        previewLayer?.videoGravity = .resizeAspectFill
-        previewView?.layer.addSublayer(previewLayer!)
-        previewLayer?.frame = previewView?.bounds ?? CGRect.zero
-        
-        videoOutput = AVCaptureVideoDataOutput()
-        videoOutput?.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
-        currentSession?.addOutput(videoOutput!)
-        
-        currentSession?.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.currentSession = AVCaptureSession()
+            self.setupCamera()
+            
+            // UI setup must be done on main thread
+            DispatchQueue.main.async {
+                self.previewLayer = AVCaptureVideoPreviewLayer(session: self.currentSession!)
+                self.previewLayer?.videoGravity = .resizeAspectFill
+                self.previewView?.layer.addSublayer(self.previewLayer!)
+                self.previewLayer?.frame = self.previewView?.bounds ?? CGRect.zero
+            }
+            
+            self.videoOutput = AVCaptureVideoDataOutput()
+            self.videoOutput?.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+            self.currentSession?.addOutput(self.videoOutput!)
+            // No need for another dispatch as we're already on a background thread
+            self.currentSession?.startRunning()
+        }
     }
     
     
     func stopCamera() {
-        currentSession?.stopRunning()
-        currentSession = nil
-        currentCamera = nil
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.currentSession?.stopRunning()
+            self.currentSession = nil
+            self.currentCamera = nil
+        }
     }
     
     func toggleFlash() -> Bool {
