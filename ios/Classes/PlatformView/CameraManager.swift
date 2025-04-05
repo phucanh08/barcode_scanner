@@ -56,28 +56,36 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
     }
     
     func startCamera() {
+        // Create and configure session on a background thread
         DispatchQueue.global(qos: .userInitiated).async {
             self.currentSession = AVCaptureSession()
             self.setupCamera()
             
-            // UI setup must be done on main thread
+            // Set up UI components on the main thread
             DispatchQueue.main.async {
+                // Configure UI components only
                 self.previewLayer = AVCaptureVideoPreviewLayer(session: self.currentSession!)
                 self.previewLayer?.videoGravity = .resizeAspectFill
                 self.previewView?.layer.addSublayer(self.previewLayer!)
                 self.previewLayer?.frame = self.previewView?.bounds ?? CGRect.zero
+                
+                // Configure video output on main thread (this doesn't start the session)
+                self.videoOutput = AVCaptureVideoDataOutput()
+                self.videoOutput?.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+                
+                // Go back to background thread to add output and start running
+                DispatchQueue.global(qos: .userInitiated).async {
+                    if let output = self.videoOutput {
+                        self.currentSession?.addOutput(output)
+                        self.currentSession?.startRunning()
+                    }
+                }
             }
-            
-            self.videoOutput = AVCaptureVideoDataOutput()
-            self.videoOutput?.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
-            self.currentSession?.addOutput(self.videoOutput!)
-            // No need for another dispatch as we're already on a background thread
-            self.currentSession?.startRunning()
         }
     }
     
-    
     func stopCamera() {
+        // Session operations on background thread
         DispatchQueue.global(qos: .userInitiated).async {
             self.currentSession?.stopRunning()
             self.currentSession = nil
@@ -102,24 +110,33 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
         return currentCamera?.torchMode == .on
     }
     
-    
     func pauseCameraPreview() {
-        DispatchQueue.global(qos: .background).async {
+        // UI state update on main thread
+        DispatchQueue.main.async {
+            self.isPauseCamera = true
+        }
+
+        // Session operations on background thread
+        DispatchQueue.global(qos: .userInitiated).async {
             guard let currentSession = self.currentSession else { return }
             if currentSession.isRunning {
                 currentSession.stopRunning()
             }
-            self.isPauseCamera = true
         }
     }
-    
+
     func resumeCameraPreview() {
-        DispatchQueue.global(qos: .background).async {
+        // UI state update on main thread
+        DispatchQueue.main.async {
+            self.isPauseCamera = false
+        }
+
+        // Session operations on background thread
+        DispatchQueue.global(qos: .userInitiated).async {
             guard let currentSession = self.currentSession else { return }
             if !currentSession.isRunning {
                 currentSession.startRunning()
             }
-            self.isPauseCamera = false
         }
     }
     
@@ -151,11 +168,12 @@ protocol VideoSampleBufferDelegate: AnyObject {
     func didReceiveSampleBuffer(_ sampleBuffer: CMSampleBuffer)
 }
 
-
 extension CameraManager {
     private func setupCamera() {
         guard let captureSession = currentSession else {return}
         captureSession.beginConfiguration()
+        
+        // Stop session on the current thread (assumed to be background thread already)
         if captureSession.isRunning {
             captureSession.stopRunning()
         }
@@ -171,6 +189,8 @@ extension CameraManager {
         }
         
         captureSession.commitConfiguration()
+        
+        // Start session on the current thread (assumed to be background thread already)
         if !captureSession.isRunning {
             captureSession.startRunning()
         }

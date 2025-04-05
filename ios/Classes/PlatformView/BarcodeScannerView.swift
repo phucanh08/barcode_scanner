@@ -60,15 +60,16 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
     
     func didReceiveSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
         DispatchQueue.global(qos: .userInitiated).async {
-            let results = self.barcodeScanner.process(sampleBuffer)
+            let results = self.barcodeScanner.process(sampleBuffer: sampleBuffer)
+            var rect: CGRect? = nil
             if (!results.isEmpty) {
                 let boundingBox = results[0].boundingBox
-                let rect = CGRect(x: CGFloat(boundingBox.left), y: CGFloat(boundingBox.top), width: CGFloat(boundingBox.right - boundingBox.left), height: CGFloat(boundingBox.bottom - boundingBox.top))
-                
-                DispatchQueue.main.async {
-                    self.didUpdateBoundingBoxOverlay(rect)
-                    self.didScanBarcodeWithResults(results)
-                }
+                rect = CGRect(x: CGFloat(boundingBox.left), y: CGFloat(boundingBox.top), width: CGFloat(boundingBox.right - boundingBox.left), height: CGFloat(boundingBox.bottom - boundingBox.top))
+
+            }
+            DispatchQueue.main.async {
+                self.didUpdateBoundingBoxOverlay(rect)
+                self.didScanBarcodeWithResults(results)
             }
         }
         
@@ -157,12 +158,16 @@ extension BarcodeScannerView {
             }
             
             
-            let barcodes = self.barcodeScanner.process(image)
+            let barcodes = self.barcodeScanner.process(image: image)
             
             DispatchQueue.main.async {
-                if barcodes.isEmpty {
-                    print("❌ Không tìm thấy barcode nào")
-                } else {
+                defer {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.isProcessingImagePath = false
+                    }
+                }
+                
+                if !barcodes.isEmpty {
                     let boundingBox = barcodes[0].boundingBox
                     let width = CGFloat(boundingBox.right - boundingBox.left)
                     let height = CGFloat(boundingBox.bottom - boundingBox.top)
@@ -175,12 +180,11 @@ extension BarcodeScannerView {
                 }
                 do {
                     result(try barcodes.map { try $0.serializedData() })
+                    return
                 } catch {
                     print("❌ Lỗi chuyển đổi dữ liệu: result(try barcodes.map { try $0.serializedData() })")
                 }
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.isProcessingImagePath = false
+                result([])
             }
         }
         

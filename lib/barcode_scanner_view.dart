@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:barcode_scanner/mapper/mapper.dart';
+import 'package:barcode_scanner/models/barcode.dart';
+import 'package:barcode_scanner/models/barcode_scanner_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -19,9 +22,9 @@ class BarcodeScannerView extends StatefulWidget {
     required this.options,
   }) : super(key: key);
 
-  final void Function(BarcodeResult)? onData;
+  final void Function(List<Barcode> barcodes)? onData;
   final void Function(String)? onError;
-  final Configuration options;
+  final BarcodeScannerOptions options;
 
   @override
   State<BarcodeScannerView> createState() => _BarcodeScannerViewState();
@@ -40,11 +43,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
           final barcodes =
               (event as List<dynamic>).map((e) => BarcodeResult.fromBuffer(e));
           if (barcodes.isNotEmpty) {
-            for (var barcode in barcodes) {
-              debugPrint('Barcode data: ${barcode.toProto3Json()}');
-
-              widget.onData?.call(barcode);
-            }
+            widget.onData?.call(barcodes.map((e) => Barcode.fromProtos(e)).toList());
           }
         }
       } catch (e) {
@@ -65,7 +64,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
     const viewType = 'barcode_scanner_view';
     const hitTestBehavior = PlatformViewHitTestBehavior.opaque;
     const layoutDirection = TextDirection.ltr;
-    final creationParams = widget.options.writeToBuffer();
+    final creationParams = widget.options.toProtos().writeToBuffer();
     const creationParamsCodec = StandardMessageCodec();
     const gestureRecognizers = <Factory<OneSequenceGestureRecognizer>>{};
 

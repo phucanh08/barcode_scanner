@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 
 import '../gen/protos/protos.pb.dart' show BarcodeResult;
@@ -12,7 +11,7 @@ class Barcode {
   final BarcodeValue? value;
   final int timestamp;
 
-  const Barcode({
+  const Barcode._({
     required this.format,
     required this.rawValue,
     required this.rawBytes,
@@ -21,12 +20,12 @@ class Barcode {
     required this.timestamp,
   });
 
-  static Barcode fromProtos(BarcodeResult protoData) {
+  factory Barcode.fromProtos(BarcodeResult protoData) {
     final format = BarcodeFormat.values.byName(protoData.format.name);
     final String rawValue = protoData.rawValue;
     final typeAndValue = typeAndValueFromString(rawValue);
 
-    return Barcode(
+    return Barcode._(
       format: format,
       rawValue: rawValue,
       rawBytes: Uint8List.fromList(protoData.rawBytes),
@@ -583,13 +582,4 @@ List<String> _getUrls(dynamic json) {
     list.add(url.toString());
   });
   return list;
-}
-
-/// Convert list of map to list of [Point].
-List<Point<int>> _listToCornerPoints(List<dynamic> points) {
-  final p = <Point<int>>[];
-  for (final point in points) {
-    p.add(Point<int>(point['x'].toInt(), point['y'].toInt()));
-  }
-  return p;
 }
