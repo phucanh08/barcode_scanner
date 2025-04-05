@@ -157,17 +157,17 @@ enum ResolutionPreset: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 enum CameraPosition: SwiftProtobuf.Enum, Swift.CaseIterable {
   typealias RawValue = Int
-  case font // = 0
+  case front // = 0
   case back // = 1
   case UNRECOGNIZED(Int)
 
   init() {
-    self = .font
+    self = .front
   }
 
   init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .font
+    case 0: self = .front
     case 1: self = .back
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -175,7 +175,7 @@ enum CameraPosition: SwiftProtobuf.Enum, Swift.CaseIterable {
 
   var rawValue: Int {
     switch self {
-    case .font: return 0
+    case .front: return 0
     case .back: return 1
     case .UNRECOGNIZED(let i): return i
     }
@@ -183,7 +183,7 @@ enum CameraPosition: SwiftProtobuf.Enum, Swift.CaseIterable {
 
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static let allCases: [CameraPosition] = [
-    .font,
+    .front,
     .back,
   ]
 
@@ -301,7 +301,7 @@ struct CameraSettings: Sendable {
   var resolutionPreset: ResolutionPreset = .hd1280X720
 
   /// Camera Position
-  var cameraPosition: CameraPosition = .font
+  var cameraPosition: CameraPosition = .front
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -417,7 +417,7 @@ extension ResolutionPreset: SwiftProtobuf._ProtoNameProviding {
 
 extension CameraPosition: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "font"),
+    0: .same(proto: "front"),
     1: .same(proto: "back"),
   ]
 }
@@ -608,7 +608,7 @@ extension CameraSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.resolutionPreset != .hd1280X720 {
       try visitor.visitSingularEnumField(value: self.resolutionPreset, fieldNumber: 1)
     }
-    if self.cameraPosition != .font {
+    if self.cameraPosition != .front {
       try visitor.visitSingularEnumField(value: self.cameraPosition, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)

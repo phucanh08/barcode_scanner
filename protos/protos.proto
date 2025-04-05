@@ -53,7 +53,7 @@ enum ResolutionPreset {
     hd1920x1080 = 1;
 }
 enum CameraPosition {
-    font = 0;
+    front = 0;
     back = 1;
 }
 message CameraSettings {

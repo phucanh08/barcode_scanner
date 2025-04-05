@@ -37,57 +37,59 @@ class Barcode {
 }
 
 Map<BarcodeType, BarcodeValue?> typeAndValueFromString(String rawValue) {
-  final jsonData = jsonDecode(rawValue);
   BarcodeType type = BarcodeType.unknown;
   BarcodeValue? value;
-  for (var e in BarcodeType.values) {
-    try {
-      switch (e) {
-        case BarcodeType.unknown:
-          break;
-        case BarcodeType.contactInfo:
-          value = BarcodeContactInfo.fromJson(jsonData);
-          break;
-        case BarcodeType.email:
-          value = BarcodeEmail.fromJson(jsonData);
-          break;
-        case BarcodeType.isbn:
-        // TODO: Handle this case.
-          break;
-        case BarcodeType.phone:
-          value = BarcodePhone.fromJson(jsonData);
-          break;
-        case BarcodeType.product:
-        // TODO: Handle this case.
-          break;
-        case BarcodeType.sms:
-        // TODO: Handle this case.
-          break;
-        case BarcodeType.text:
-        // TODO: Handle this case.
-          break;
-        case BarcodeType.url:
-          value = BarcodeUrl.fromJson(jsonData);
-          break;
-        case BarcodeType.wifi:
-          value = BarcodeWifi.fromJson(jsonData);
-          break;
-        case BarcodeType.geoCoordinates:
-        // TODO: Handle this case.
-          break;
-        case BarcodeType.calendarEvent:
-        // TODO: Handle this case.
-          break;
-        case BarcodeType.driverLicense:
-          value = BarcodeDriverLicense.fromJson(jsonData);
-          break;
-        case BarcodeType.boardingPass:
-        // TODO: Handle this case.
-          break;
-      }
-      type = BarcodeType.wifi;
-    } catch (_) {}
-  }
+  try {
+    // final jsonData = jsonDecode(rawValue);
+
+    // for (var e in BarcodeType.values) {
+    //   try {
+    //     switch (e) {
+    //       case BarcodeType.unknown:
+    //         break;
+    //       case BarcodeType.contactInfo:
+    //         value = BarcodeContactInfo.fromJson(jsonData);
+    //         break;
+    //       case BarcodeType.email:
+    //         value = BarcodeEmail.fromJson(jsonData);
+    //         break;
+    //       case BarcodeType.isbn:
+    //       // TODO: Handle this case.
+    //         break;
+    //       case BarcodeType.phone:
+    //         value = BarcodePhone.fromJson(jsonData);
+    //         break;
+    //       case BarcodeType.product:
+    //       // TODO: Handle this case.
+    //         break;
+    //       case BarcodeType.sms:
+    //       // TODO: Handle this case.
+    //         break;
+    //       case BarcodeType.text:
+    //       // TODO: Handle this case.
+    //         break;
+    //       case BarcodeType.url:
+    //         value = BarcodeUrl.fromJson(jsonData);
+    //         break;
+    //       case BarcodeType.wifi:
+    //         value = BarcodeWifi.fromJson(jsonData);
+    //         break;
+    //       case BarcodeType.geoCoordinates:
+    //       // TODO: Handle this case.
+    //         break;
+    //       case BarcodeType.calendarEvent:
+    //       // TODO: Handle this case.
+    //         break;
+    //       case BarcodeType.driverLicense:
+    //         value = BarcodeDriverLicense.fromJson(jsonData);
+    //         break;
+    //       case BarcodeType.boardingPass:
+    //       // TODO: Handle this case.
+    //         break;
+    //     }
+    //   } catch (_) {}
+    // }
+  } catch (_) {}
 
   return {type: value};
 }

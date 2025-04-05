@@ -313,7 +313,7 @@ class CameraSettings extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CameraSettings', createEmptyInstance: create)
     ..e<ResolutionPreset>(1, _omitFieldNames ? '' : 'resolutionPreset', $pb.PbFieldType.OE, protoName: 'resolutionPreset', defaultOrMaker: ResolutionPreset.hd1280x720, valueOf: ResolutionPreset.valueOf, enumValues: ResolutionPreset.values)
-    ..e<CameraPosition>(2, _omitFieldNames ? '' : 'cameraPosition', $pb.PbFieldType.OE, protoName: 'cameraPosition', defaultOrMaker: CameraPosition.font, valueOf: CameraPosition.valueOf, enumValues: CameraPosition.values)
+    ..e<CameraPosition>(2, _omitFieldNames ? '' : 'cameraPosition', $pb.PbFieldType.OE, protoName: 'cameraPosition', defaultOrMaker: CameraPosition.front, valueOf: CameraPosition.valueOf, enumValues: CameraPosition.values)
     ..hasRequiredFields = false
   ;
 

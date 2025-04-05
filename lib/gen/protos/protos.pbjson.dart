@@ -60,14 +60,14 @@ final $typed_data.Uint8List resolutionPresetDescriptor = $convert.base64Decode(
 const CameraPosition$json = {
   '1': 'CameraPosition',
   '2': [
-    {'1': 'font', '2': 0},
+    {'1': 'front', '2': 0},
     {'1': 'back', '2': 1},
   ],
 };
 
 /// Descriptor for `CameraPosition`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List cameraPositionDescriptor = $convert.base64Decode(
-    'Cg5DYW1lcmFQb3NpdGlvbhIICgRmb250EAASCAoEYmFjaxAB');
+    'Cg5DYW1lcmFQb3NpdGlvbhIJCgVmcm9udBAAEggKBGJhY2sQAQ==');
 
 @$core.Deprecated('Use resultTypeDescriptor instead')
 const ResultType$json = {

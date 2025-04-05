@@ -34,7 +34,7 @@ extension _CameraPositionToProtos on CameraPosition {
   protos.CameraPosition toProtos() {
     switch (this) {
       case CameraPosition.font:
-        return protos.CameraPosition.font;
+        return protos.CameraPosition.front;
       case CameraPosition.back:
         return protos.CameraPosition.back;
     }

@@ -76,11 +76,11 @@ class ResolutionPreset extends $pb.ProtobufEnum {
 }
 
 class CameraPosition extends $pb.ProtobufEnum {
-  static const CameraPosition font = CameraPosition._(0, _omitEnumNames ? '' : 'font');
+  static const CameraPosition front = CameraPosition._(0, _omitEnumNames ? '' : 'front');
   static const CameraPosition back = CameraPosition._(1, _omitEnumNames ? '' : 'back');
 
   static const $core.List<CameraPosition> values = <CameraPosition> [
-    font,
+    front,
     back,
   ];
 

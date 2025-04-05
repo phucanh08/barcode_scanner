@@ -47,7 +47,7 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
         case .back:
             self.cameraPosition = .back
             break
-        case .font:
+        case .front:
             self.cameraPosition = .front
             break
         default:
