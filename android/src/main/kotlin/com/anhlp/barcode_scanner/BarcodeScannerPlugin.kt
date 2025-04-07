@@ -1,5 +1,6 @@
 package com.anhlp.barcode_scanner
 
+import com.anhlp.barcode_scanner.platform_view.BarcodeScannerViewFactory
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 
 class BarcodeScannerPlugin : FlutterPlugin {

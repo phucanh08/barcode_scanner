@@ -1,4 +1,4 @@
-package com.anhlp.barcode_scanner
+package com.anhlp.barcode_scanner.platform_view
 
 import android.content.Context
 import android.os.Build
@@ -6,11 +6,8 @@ import android.util.Log
 import android.util.Size
 import android.view.WindowManager
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageAnalysis.Analyzer
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.MeteringPointFactory
 import androidx.camera.core.Preview
 import androidx.camera.core.TorchState
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
@@ -20,6 +17,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.anhlp.barcode_scanner.Protos
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -65,7 +63,7 @@ class CameraManager(private val context: Context) {
 
     fun setCameraPosition(cameraPosition: Protos.CameraPosition) {
         cameraSelector = when (cameraPosition) {
-            Protos.CameraPosition.font -> CameraSelector.DEFAULT_FRONT_CAMERA
+            Protos.CameraPosition.front -> CameraSelector.DEFAULT_FRONT_CAMERA
             Protos.CameraPosition.back -> CameraSelector.DEFAULT_BACK_CAMERA
             else -> CameraSelector.DEFAULT_BACK_CAMERA
         }

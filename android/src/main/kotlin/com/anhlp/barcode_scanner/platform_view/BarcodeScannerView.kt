@@ -1,4 +1,4 @@
-package com.anhlp.barcode_scanner
+package com.anhlp.barcode_scanner.platform_view
 
 import android.content.Context
 import android.graphics.*
@@ -6,6 +6,9 @@ import android.os.*
 import android.view.View
 import android.widget.ImageView
 import androidx.camera.core.ImageProxy
+import com.anhlp.barcode_scanner.Protos
+import com.anhlp.barcode_scanner.scanner.BarcodeScanner
+import com.anhlp.barcode_scanner.utils.ImageUtils
 import io.flutter.plugin.common.*
 import io.flutter.plugin.platform.*
 import kotlinx.coroutines.*
@@ -16,7 +19,7 @@ internal class BarcodeScannerView(
     context: Context,
     id: Int,
     creationParams: Any?
-) : PlatformView, MethodChannel.MethodCallHandler, BarcodeScanDelegate, CameraStreamDelegate {
+) : PlatformView, MethodChannel.MethodCallHandler, CameraStreamDelegate {
     private val _view = android.widget.FrameLayout(context)
     private val imageView = ImageView(context).apply {
         scaleType = ImageView.ScaleType.CENTER_CROP // Đảm bảo ảnh lấp đầy và cắt nếu cần
@@ -45,7 +48,6 @@ internal class BarcodeScannerView(
         eventChannel.setStreamHandler(eventChannelHandler)
 
 
-        barcodeScanner.delegate = this
         cameraManager.delegate = this
         val config = Protos.Configuration.parseFrom(creationParams as ByteArray)
         cameraManager.setCameraSetting(config.cameraSettings)
@@ -59,7 +61,6 @@ internal class BarcodeScannerView(
 
     override fun dispose() {
         cameraManager.stopCamera()
-        barcodeScanner.dispose()
     }
 
     override fun onMethodCall(
@@ -100,6 +101,8 @@ internal class BarcodeScannerView(
 
     private fun handleBarcodeDetectionResult(imagePath: String, result: MethodChannel.Result) {
         CoroutineScope(Dispatchers.Main) .launch {
+            isDetectingByPath = true
+            cameraManager.previewView.visibility = View.INVISIBLE
             imageView.scaleType = ImageView.ScaleType.FIT_CENTER
             boundingBoxOverlay.clear()
         }
@@ -115,14 +118,17 @@ internal class BarcodeScannerView(
                     imageView.setImageBitmap(bitmap)
                     pauseCameraPreview()
                 }
-                isDetectingByPath = true
-                var rawData: String? = null
-                rawData = barcodeScanner.mlKitBarcodeScannerProcess(bitmap)
-                if(rawData == null) {
-                    rawData = barcodeScanner.zxingProcess(bitmap)
+                val barcodes = barcodeScanner.process(bitmap)
+                if (barcodes.isNotEmpty()) {
+                    val rectF = RectF(
+                        barcodes[0].boundingBox.left,
+                        barcodes[0].boundingBox.top,
+                        barcodes[0].boundingBox.right,
+                        barcodes[0].boundingBox.bottom
+                    )
+                    updateBoundingBoxOverlay(rectF, bitmap)
                 }
-                val list = listOfNotNull(rawData)
-                result.success(list)
+                result.success(barcodes.map { it.toByteArray() })
             } catch (e: Exception) {
                 result.error("BARCODE_DETECTION_ERROR", e.message, null)
             } finally {
@@ -146,6 +152,8 @@ internal class BarcodeScannerView(
             CoroutineScope(Dispatchers.Main).launch {
                 boundingBoxOverlay.clear()
                 imageView.setImageResource(0)
+                cameraManager.previewView.visibility = View.VISIBLE
+                imageView.scaleType = ImageView.ScaleType.CENTER_CROP
             }
             cameraManager.resumeCameraPreview()
             return true
@@ -154,43 +162,24 @@ internal class BarcodeScannerView(
         }
     }
 
-    override fun didUpdateBoundingBoxOverlay(rectF: RectF?, bitmap: Bitmap?) {
+    private fun updateBoundingBoxOverlay(rectF: RectF?, bitmap: Bitmap?) {
         val isDetectingByPath = isDetectingByPath
 
         CoroutineScope(Dispatchers.Main).launch {
-        if (isDetectingByPath) {
-            cameraManager.previewView.visibility = View.INVISIBLE
-        } else {
-            cameraManager.previewView.visibility = View.VISIBLE
-            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-        }
+            if (cameraManager.isPauseCamera && !isDetectingByPath) return@launch
+
+            if (rectF == null || bitmap == null) {
+                boundingBoxOverlay.clear()
+                return@launch
             }
 
-        if (cameraManager.isPauseCamera && !isDetectingByPath) return
+            if (!cameraManager.isPauseCamera) {
+                imageView.setImageBitmap(bitmap)  
+                pauseCameraPreview()
+            }
 
-        if (rectF == null || bitmap == null) {
-            boundingBoxOverlay.clear()
-            return
+            boundingBoxOverlay.setBoundingBox(rectF, bitmap.width, bitmap.height, !isDetectingByPath)
         }
-
-        if (!cameraManager.isPauseCamera) {
-            imageView.setImageBitmap(bitmap)
-            pauseCameraPreview()
-        }
-
-        boundingBoxOverlay.setBoundingBox(rectF, bitmap.width, bitmap.height, !isDetectingByPath)
-    }
-
-    override fun didScanBarcodeWithResult(scanResult: Protos.ScanResult) {
-        eventChannelHandler.success(scanResult.toByteArray())
-    }
-
-    override fun didFailWithErrorCode(
-        errorCode: String?,
-        errorMessage: String?,
-        errorDetails: Any?
-    ) {
-        eventChannelHandler.error(errorCode, errorMessage, errorDetails)
     }
 
     override fun didReceiveFrame(imageProxy: ImageProxy) {
@@ -198,7 +187,22 @@ internal class BarcodeScannerView(
             imageProxy.close()
             return
         }
-        barcodeScanner.process(imageProxy)
+        imageProxy.use {
+            val bitmap = imageProxy.toBitmap()
+            val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+
+            val barcodes = barcodeScanner.process(bitmap, rotationDegrees)
+            if (barcodes.isNotEmpty()) {
+                val rectF = RectF(
+                    barcodes[0].boundingBox.left,
+                    barcodes[0].boundingBox.top,
+                    barcodes[0].boundingBox.right,
+                    barcodes[0].boundingBox.bottom
+                )
+                updateBoundingBoxOverlay(rectF, bitmap)
+                eventChannelHandler.success(barcodes.map { it.toByteArray() })
+            }
+        }
     }
 }
 
