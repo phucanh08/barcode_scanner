@@ -91,8 +91,8 @@ class GeneralScannerPage extends StatelessWidget {
                 cameraPosition: CameraPosition.back,
               ),
               resultSettings: ResultSettings(
-                beepOnScan: false,
-                vibrateOnScan: false,
+                beepOnScan: true,
+                vibrateOnScan: true,
               ),
             ),
             onData: (barcodes) {

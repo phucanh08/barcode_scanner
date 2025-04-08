@@ -22,8 +22,8 @@ class BarcodeScanner {
 
     @OptIn(ExperimentalGetImage::class)
     fun process(imageProxy: ImageProxy): List<Protos.BarcodeResult> {
-        val bitmap = imageProxy.toBitmap()
         imageProxy.use {
+            val bitmap = imageProxy.toBitmap()
             val rotationDegrees = it.imageInfo.rotationDegrees
             var barcodes =
                 mlKitBarcodeScanner.process(bitmap, rotationDegrees)

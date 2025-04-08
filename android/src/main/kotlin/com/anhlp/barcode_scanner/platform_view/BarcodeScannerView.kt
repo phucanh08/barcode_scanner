@@ -1,17 +1,35 @@
 package com.anhlp.barcode_scanner.platform_view
 
+import android.Manifest
 import android.content.Context
-import android.graphics.*
-import android.os.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.RectF
+import android.media.AudioManager
+import android.media.ToneGenerator
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.View
 import android.widget.ImageView
+import androidx.annotation.RequiresPermission
 import androidx.camera.core.ImageProxy
 import com.anhlp.barcode_scanner.Protos
 import com.anhlp.barcode_scanner.scanner.BarcodeScanner
 import com.anhlp.barcode_scanner.utils.ImageUtils
-import io.flutter.plugin.common.*
-import io.flutter.plugin.platform.*
-import kotlinx.coroutines.*
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.platform.PlatformView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 internal class BarcodeScannerView(
@@ -33,7 +51,7 @@ internal class BarcodeScannerView(
     private val barcodeScanner = BarcodeScanner()
     private val cameraManager: CameraManager = CameraManager(context)
 
-    private val eventChannelHandler = EventChannelHandler()
+    private val eventChannelHandler = EventChannelHandler(context)
 
     private var isDetectingByPath: Boolean = false
 
@@ -50,6 +68,8 @@ internal class BarcodeScannerView(
 
         cameraManager.delegate = this
         val config = Protos.Configuration.parseFrom(creationParams as ByteArray)
+        eventChannelHandler.beepOnScan = config.resultSettings.beepOnScan
+        eventChannelHandler.vibrateOnScan = config.resultSettings.vibrateOnScan
         cameraManager.setCameraSetting(config.cameraSettings)
         barcodeScanner.setFormats(config.barcodeFormatsList)
         cameraManager.startCamera()
@@ -98,9 +118,8 @@ internal class BarcodeScannerView(
     }
 
 
-
     private fun handleBarcodeDetectionResult(imagePath: String, result: MethodChannel.Result) {
-        CoroutineScope(Dispatchers.Main) .launch {
+        CoroutineScope(Dispatchers.Main).launch {
             isDetectingByPath = true
             cameraManager.previewView.visibility = View.INVISIBLE
             imageView.scaleType = ImageView.ScaleType.FIT_CENTER
@@ -174,11 +193,16 @@ internal class BarcodeScannerView(
             }
 
             if (!cameraManager.isPauseCamera) {
-                imageView.setImageBitmap(bitmap)  
+                imageView.setImageBitmap(bitmap)
                 pauseCameraPreview()
             }
 
-            boundingBoxOverlay.setBoundingBox(rectF, bitmap.width, bitmap.height, !isDetectingByPath)
+            boundingBoxOverlay.setBoundingBox(
+                rectF,
+                bitmap.width,
+                bitmap.height,
+                !isDetectingByPath
+            )
         }
     }
 
@@ -206,13 +230,24 @@ internal class BarcodeScannerView(
     }
 }
 
-
-open class EventChannelHandler : EventChannel.StreamHandler {
+open class EventChannelHandler(context: Context) : EventChannel.StreamHandler {
+    var vibrateOnScan: Boolean = false
+    var beepOnScan: Boolean = false
+    private val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val vibratorManager =
+            context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        vibratorManager.defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
     private var eventSink: EventChannel.EventSink? = null
     private val handler = Handler(Looper.getMainLooper())
 
     open fun success(event: Any?) {
         handler.post { eventSink?.success(event) }
+        beep()
+        vibrate()
     }
 
     open fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
@@ -229,5 +264,35 @@ open class EventChannelHandler : EventChannel.StreamHandler {
 
     override fun onCancel(arguments: Any?) {
         eventSink = null
+    }
+
+    fun beep() {
+        if (beepOnScan) {
+            val toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
+            toneGenerator.startTone(ToneGenerator.TONE_DTMF_S, 150)
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.VIBRATE)
+    fun vibrate() {
+        if (vibrateOnScan) {
+            val milliseconds = 300L
+            CoroutineScope(Dispatchers.IO).launch {
+                if (vibrator.hasVibrator()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val effect =
+                            VibrationEffect.createOneShot(
+                                milliseconds,
+                                VibrationEffect.DEFAULT_AMPLITUDE
+                            )
+                        vibrator.vibrate(effect)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(milliseconds)
+                    }
+                    delay(milliseconds)
+                }
+            }
+        }
     }
 }

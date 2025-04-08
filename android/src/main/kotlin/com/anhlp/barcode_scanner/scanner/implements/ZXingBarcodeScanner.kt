@@ -2,6 +2,7 @@ package com.anhlp.barcode_scanner.scanner.implements
 
 import android.graphics.Bitmap
 import com.anhlp.barcode_scanner.Protos
+import com.anhlp.barcode_scanner.mappers.BarcodeFormatMapper
 import com.anhlp.barcode_scanner.mappers.BarcodeMapper
 import com.anhlp.barcode_scanner.scanner.interfaces.IBarcodeScanner
 import com.google.zxing.BarcodeFormat
@@ -17,7 +18,7 @@ class ZXingBarcodeScanner : IBarcodeScanner {
     private var reader: MultiFormatReader? = null
 
     override fun setFormats(formats: List<Protos.BarcodeFormat>) {
-        this.formats = formats.map { zxingFormatMap[it] as BarcodeFormat }
+        this.formats =  BarcodeFormatMapper.toZXingBarcodeFormats(formats)
         val hints = mapOf(DecodeHintType.POSSIBLE_FORMATS to this.formats)
         reader = MultiFormatReader()
         reader?.setHints(hints)
@@ -47,21 +48,5 @@ class ZXingBarcodeScanner : IBarcodeScanner {
         }
 
         return emptyList()
-    }
-
-    companion object {
-        internal val zxingFormatMap: Map<Protos.BarcodeFormat, BarcodeFormat> = mapOf(
-            Protos.BarcodeFormat.aztec to BarcodeFormat.AZTEC,
-            Protos.BarcodeFormat.code39 to BarcodeFormat.CODE_39,
-            Protos.BarcodeFormat.code93 to BarcodeFormat.CODE_93,
-            Protos.BarcodeFormat.code128 to BarcodeFormat.CODE_128,
-            Protos.BarcodeFormat.dataMatrix to BarcodeFormat.DATA_MATRIX,
-            Protos.BarcodeFormat.ean8 to BarcodeFormat.EAN_8,
-            Protos.BarcodeFormat.ean13 to BarcodeFormat.EAN_13,
-            Protos.BarcodeFormat.itf to BarcodeFormat.ITF,
-            Protos.BarcodeFormat.pdf417 to BarcodeFormat.PDF_417,
-            Protos.BarcodeFormat.qr to BarcodeFormat.QR_CODE,
-            Protos.BarcodeFormat.upce to BarcodeFormat.UPC_E
-        )
     }
 }
