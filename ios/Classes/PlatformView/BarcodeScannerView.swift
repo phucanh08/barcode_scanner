@@ -14,6 +14,9 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
     private let eventChannelHandler = EventChannelHandler()
     
     private var isProcessingImagePath: Bool = false
+    private var isProcessingLivestream: Bool = false
+    private var beepOnScan: Bool = false
+    private var vibrationOnScan: Bool = false
     
     init(
         frame: CGRect,
@@ -46,6 +49,8 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
         
         do {
             let configuration = try Configuration(serializedBytes: (args as! FlutterStandardTypedData).data)
+            beepOnScan = configuration.resultSettings.beepOnScan
+            vibrationOnScan = configuration.resultSettings.vibrateOnScan
             cameraManager.setCameraSettings(configuration.cameraSettings)
             barcodeScanner.setFormats(configuration.barcodeFormats)
         } catch {
@@ -59,23 +64,42 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
     }
     
     func didReceiveSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            let results = self.barcodeScanner.process(sampleBuffer: sampleBuffer)
-            var rect: CGRect? = nil
-            if (!results.isEmpty) {
-                let boundingBox = results[0].boundingBox
-                rect = CGRect(x: CGFloat(boundingBox.left), y: CGFloat(boundingBox.top), width: CGFloat(boundingBox.right - boundingBox.left), height: CGFloat(boundingBox.bottom - boundingBox.top))
-
-            }
-            DispatchQueue.main.async {
-                self.didUpdateBoundingBoxOverlay(rect)
-                self.didScanBarcodeWithResults(results)
+        if (!isProcessingLivestream) {
+            isProcessingLivestream = true
+            DispatchQueue.global(qos: .userInitiated).async {
+                
+                defer {
+                    self.isProcessingLivestream = false
+                }
+                let results = self.barcodeScanner.process(sampleBuffer: sampleBuffer)
+                var rect: CGRect? = nil
+                
+                var image: UIImage? = nil
+                if (!results.isEmpty) {
+                    let boundingBox = results[0].boundingBox
+                    rect = CGRect(x: CGFloat(boundingBox.left), y: CGFloat(boundingBox.top), width: CGFloat(boundingBox.right - boundingBox.left), height: CGFloat(boundingBox.bottom - boundingBox.top))
+                    image = UIImage.imageFromSampleBuffer(sampleBuffer)
+                    DispatchQueue.main.async {
+                        self.imageView.image = image
+                        self.imageView.isHidden = false
+                        self.imageView.contentMode = .scaleAspectFill
+                        self.cameraManager.view.isHidden = true
+                        self.updateBoundingBoxOverlay(rect, size: image?.size)
+                        self.didScanBarcodeWithResults(results)
+                    }
+                }
+                DispatchQueue.main.async {
+                   
+                }
+                
+                
             }
         }
         
     }
     
-    private func didUpdateBoundingBoxOverlay(_ rect: CGRect?, size: CGSize? = nil) {
+    private func updateBoundingBoxOverlay(_ rect: CGRect?, size: CGSize? = nil) {
+        let isProcessingImagePath = isProcessingImagePath
         if (cameraManager.isPauseCamera && !isProcessingImagePath) { return }
         
         guard let boundingBox = rect else {
@@ -86,21 +110,25 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
         self.cameraManager.pauseCameraPreview()
         
         let imageSize = size ?? cameraManager.getSize()
-        boundingBoxOverlay.setBoundingBox(boundingBox, imageSize: imageSize, isFitContain: size == nil)
+        boundingBoxOverlay.setBoundingBox(boundingBox, imageSize: imageSize, isFitContain: !isProcessingImagePath)
     }
     
     private func didScanBarcodeWithResults(_ results: [BarcodeResult]) {
         do {
             if(!results.isEmpty) {
                 eventChannelHandler.eventSink?(try results.map { try $0.serializedData() })
+                if (vibrationOnScan) {
+                    // Vibrate
+                    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+                }
+                if (beepOnScan) {
+                    // Beep (system sound ID 1057 is a short tone, you can try different ones)
+                    AudioServicesPlaySystemSound(1057)
+                }
             }
         } catch {
             eventChannelHandler.eventSink?(FlutterError(code: "err_serialize", message: "Failed to serialize the result", details: nil))
         }
-    }
-    
-    private func didFailWithErrorCode(_ code: String, _ message: String, _ details: Any?) {
-        eventChannelHandler.eventSink?(FlutterError(code: code, message: message, details: details))
     }
 }
 
@@ -123,6 +151,8 @@ extension BarcodeScannerView {
                 self.cameraManager.view.isHidden = false
                 self.imageView.image = nil
                 self.imageView.isHidden = true
+                self.imageView.contentMode = .scaleAspectFit
+                self.isProcessingLivestream = false
             }
             self.cameraManager.resumeCameraPreview()
             result(!cameraManager.isPauseCamera)
@@ -142,7 +172,10 @@ extension BarcodeScannerView {
     
     private func detectBarcodesByImagePath(_ path: String, result: @escaping FlutterResult) {
         DispatchQueue.global(qos: .userInitiated).async {
-            self.isProcessingImagePath = true
+            DispatchQueue.main.async {
+                self.isProcessingImagePath = true
+                self.imageView.contentMode = .scaleAspectFit
+            }
             let fileURL = URL(fileURLWithPath: path)
             
             guard let image = UIImage(contentsOfFile: fileURL.path)?.fixOrientation() else {
@@ -175,7 +208,7 @@ extension BarcodeScannerView {
                     
                     
                     DispatchQueue.main.async {
-                        self.didUpdateBoundingBoxOverlay(rect, size: image.size)
+                        self.updateBoundingBoxOverlay(rect, size: image.size)
                     }
                 }
                 do {

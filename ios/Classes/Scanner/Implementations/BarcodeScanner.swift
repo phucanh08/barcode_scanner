@@ -4,7 +4,7 @@ import UIKit
 
 
 
-class BarcodeScanner: BarcodeScanning {
+class BarcodeScanner {
     private var formats: [BarcodeFormat] = []
     private let visionFrameworkBarcodeScanner = VisionFrameworkBarcodeScanner()
     
