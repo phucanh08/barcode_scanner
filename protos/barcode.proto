@@ -1,0 +1,25 @@
+syntax = "proto3";
+package com.anhlp.barcode_scanner;
+option java_package = "com.anhlp.barcode_scanner";
+import "barcode_format.proto";
+
+message BarcodeResult {
+    BarcodeFormat format = 1;
+    string rawValue = 2;
+    bytes rawBytes = 3;
+    Rect boundingBox = 4;
+    repeated Point cornerPoints = 5;
+    int64 timestamp = 6;
+}
+
+message Rect {
+    float left = 1;
+    float top = 2;
+    float right = 3;
+    float bottom = 4;
+}
+
+message Point {
+    float x = 1;
+    float y =2;
+}

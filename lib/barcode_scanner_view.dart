@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:barcode_scanner/mapper/mapper.dart';
+import 'package:barcode_scanner/models/barcode.dart';
+import 'package:barcode_scanner/models/barcode_scanner_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -19,9 +22,9 @@ class BarcodeScannerView extends StatefulWidget {
     required this.options,
   }) : super(key: key);
 
-  final void Function(ScanResult)? onData;
+  final void Function(List<Barcode> barcodes)? onData;
   final void Function(String)? onError;
-  final Configuration options;
+  final BarcodeScannerOptions options;
 
   @override
   State<BarcodeScannerView> createState() => _BarcodeScannerViewState();
@@ -37,18 +40,14 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
     streamSubscription = eventChannel.receiveBroadcastStream().listen((event) {
       try {
         if (event != null) {
-          final tmpResult = ScanResult.fromBuffer(event);
-          widget.onData?.call(ScanResult(
-            format: tmpResult.format,
-            formatNote: tmpResult.formatNote,
-            rawContent: tmpResult.rawContent,
-            type: tmpResult.type,
-          ));
+          final barcodes =
+              (event as List<dynamic>).map((e) => BarcodeResult.fromBuffer(e));
+          if (barcodes.isNotEmpty) {
+            widget.onData?.call(barcodes.map((e) => Barcode.fromProtos(e)).toList());
+          }
         }
       } catch (e) {
-        if (kDebugMode) {
-          print('Error receiving event: $e');
-        }
+        debugPrint('Error receiving event: $e');
         widget.onError?.call(e.toString());
       }
     });
@@ -65,7 +64,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
     const viewType = 'barcode_scanner_view';
     const hitTestBehavior = PlatformViewHitTestBehavior.opaque;
     const layoutDirection = TextDirection.ltr;
-    final creationParams = widget.options.writeToBuffer();
+    final creationParams = widget.options.toProtos().writeToBuffer();
     const creationParamsCodec = StandardMessageCodec();
     const gestureRecognizers = <Factory<OneSequenceGestureRecognizer>>{};
 

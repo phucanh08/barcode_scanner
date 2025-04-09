@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class GeneralScannerBottomSheet extends StatelessWidget {
-  const GeneralScannerBottomSheet({super.key});
+  const GeneralScannerBottomSheet({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

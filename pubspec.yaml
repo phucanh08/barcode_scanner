@@ -1,6 +1,6 @@
 name: barcode_scanner
 description: "A new Flutter project to use platform view for barcode scan"
-version: 0.0.4
+version: 0.0.5
 homepage: https://github.com/phucanh08/barcode_scanner
 repository: https://github.com/phucanh08/barcode_scanner
 

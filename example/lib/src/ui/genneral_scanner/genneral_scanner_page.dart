@@ -7,7 +7,7 @@ import 'widgets/flash_button.dart';
 import 'widgets/general_scanner_bottom_sheet.dart';
 
 class GeneralScannerPage extends StatelessWidget {
-  const GeneralScannerPage({super.key});
+  const GeneralScannerPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class GeneralScannerPage extends StatelessWidget {
           final results =
               await BarcodeScanner().detectBarcodesByImagePath(image.path);
           for (var e in results ?? []) {
-            debugPrint("Mã vạch phát hiện: $e");
+            debugPrint("Mã vạch phát hiện: ${e.toString()}");
           }
         } else {
           BarcodeScanner().resumeCamera();
@@ -81,22 +81,28 @@ class GeneralScannerPage extends StatelessWidget {
       child: Stack(
         children: [
           BarcodeScannerView(
-            options: Configuration(
-              barcodeFormats: [
+            options: const BarcodeScannerOptions(
+              formats: [
                 BarcodeFormat.qr,
                 BarcodeFormat.pdf417,
               ],
               cameraSettings: CameraSettings(
                 resolutionPreset: ResolutionPreset.hd1280x720,
-                cameraPosition: CameraPosition.back
+                cameraPosition: CameraPosition.back,
               ),
               resultSettings: ResultSettings(
-                beepOnScan: false,
-                vibrateOnScan: false,
+                beepOnScan: true,
+                vibrateOnScan: true,
               ),
             ),
-            onData: (data) {
-              debugPrint('Barcode data: ${data.rawContent}');
+            onData: (barcodes) {
+              if (barcodes.isEmpty) {
+                debugPrint("❌ Không tìm thấy barcode nào");
+                return;
+              }
+              for (final barcode in barcodes) {
+                debugPrint("✅ Barcode detected: ${barcode.rawValue}");
+              }
             },
           ),
           const Positioned(top: 100, left: 20, child: FlashButton()),

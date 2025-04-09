@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'barcode_scanner_method_channel.dart';
+import 'models/barcode.dart';
 
 abstract class BarcodeScannerPlatform extends PlatformInterface {
   /// Constructs a BarcodeScannerPlatform.
@@ -36,7 +37,7 @@ abstract class BarcodeScannerPlatform extends PlatformInterface {
     methodChannelComparator.complete(methodChannel);
   }
 
-  Future<List<String>?> detectBarcodesByImagePath(String imagePath) {
+  Future<List<Barcode>?> detectBarcodesByImagePath(String imagePath) {
     throw UnimplementedError(
         'detectBarcodesByImagePath has not been implemented.');
   }

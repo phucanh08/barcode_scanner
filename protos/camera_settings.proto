@@ -8,7 +8,7 @@ enum ResolutionPreset {
 }
 
 enum CameraPosition {
-    font = 0;
+    front = 0;
     back = 1;
 }
 

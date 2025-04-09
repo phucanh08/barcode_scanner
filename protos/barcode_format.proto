@@ -3,16 +3,26 @@ package com.anhlp.barcode_scanner;
 option java_package = "com.anhlp.barcode_scanner";
 
 enum BarcodeFormat {
-    unknown = 0;
-    aztec = 1;
-    code39 = 2;
-    code93 = 3;
-    ean8 = 4;
-    ean13 = 5;
-    code128 = 6;
-    dataMatrix = 7;
-    qr = 8;
-    interleaved2of5 = 9;
-    upce = 10;
-    pdf417 = 11;
+    all = 0;
+
+    // 1D Barcode
+    code39 = 1;
+    code93 = 2;
+    code128 = 3;
+    itf = 4;
+    upce = 5;
+    ean8 = 6;
+    ean13 = 7;
+    codaBar = 8;
+    gs1DataBar = 9;
+    gs1DataBarExtended = 10;
+
+    // 2D Barcode
+    qr = 11;
+    pdf417 = 12;
+    dataMatrix = 13;
+    aztec = 14;
+
+    unknown = 15;
 }
+

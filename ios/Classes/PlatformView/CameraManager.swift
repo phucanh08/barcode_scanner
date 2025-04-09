@@ -47,7 +47,7 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
         case .back:
             self.cameraPosition = .back
             break
-        case .font:
+        case .front:
             self.cameraPosition = .front
             break
         default:
@@ -56,26 +56,41 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
     }
     
     func startCamera() {
-        currentSession = AVCaptureSession()
-        setupCamera()
-        
-        previewLayer = AVCaptureVideoPreviewLayer(session: currentSession!)
-        previewLayer?.videoGravity = .resizeAspectFill
-        previewView?.layer.addSublayer(previewLayer!)
-        previewLayer?.frame = previewView?.bounds ?? CGRect.zero
-        
-        videoOutput = AVCaptureVideoDataOutput()
-        videoOutput?.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
-        currentSession?.addOutput(videoOutput!)
-        
-        currentSession?.startRunning()
+        // Create and configure session on a background thread
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.currentSession = AVCaptureSession()
+            self.setupCamera()
+            
+            // Set up UI components on the main thread
+            DispatchQueue.main.async {
+                // Configure UI components only
+                self.previewLayer = AVCaptureVideoPreviewLayer(session: self.currentSession!)
+                self.previewLayer?.videoGravity = .resizeAspectFill
+                self.previewView?.layer.addSublayer(self.previewLayer!)
+                self.previewLayer?.frame = self.previewView?.bounds ?? CGRect.zero
+                
+                // Configure video output on main thread (this doesn't start the session)
+                self.videoOutput = AVCaptureVideoDataOutput()
+                self.videoOutput?.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+                
+                // Go back to background thread to add output and start running
+                DispatchQueue.global(qos: .userInitiated).async {
+                    if let output = self.videoOutput {
+                        self.currentSession?.addOutput(output)
+                        self.currentSession?.startRunning()
+                    }
+                }
+            }
+        }
     }
     
-    
     func stopCamera() {
-        currentSession?.stopRunning()
-        currentSession = nil
-        currentCamera = nil
+        // Session operations on background thread
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.currentSession?.stopRunning()
+            self.currentSession = nil
+            self.currentCamera = nil
+        }
     }
     
     func toggleFlash() -> Bool {
@@ -95,24 +110,33 @@ class CameraManager: UIViewController, AVCaptureVideoDataOutputSampleBufferDeleg
         return currentCamera?.torchMode == .on
     }
     
-    
     func pauseCameraPreview() {
-        DispatchQueue.global(qos: .background).async {
+        // UI state update on main thread
+        DispatchQueue.main.async {
+            self.isPauseCamera = true
+        }
+
+        // Session operations on background thread
+        DispatchQueue.global(qos: .userInitiated).async {
             guard let currentSession = self.currentSession else { return }
             if currentSession.isRunning {
                 currentSession.stopRunning()
             }
-            self.isPauseCamera = true
         }
     }
-    
+
     func resumeCameraPreview() {
-        DispatchQueue.global(qos: .background).async {
+        // UI state update on main thread
+        DispatchQueue.main.async {
+            self.isPauseCamera = false
+        }
+
+        // Session operations on background thread
+        DispatchQueue.global(qos: .userInitiated).async {
             guard let currentSession = self.currentSession else { return }
             if !currentSession.isRunning {
                 currentSession.startRunning()
             }
-            self.isPauseCamera = false
         }
     }
     
@@ -144,11 +168,12 @@ protocol VideoSampleBufferDelegate: AnyObject {
     func didReceiveSampleBuffer(_ sampleBuffer: CMSampleBuffer)
 }
 
-
 extension CameraManager {
     private func setupCamera() {
         guard let captureSession = currentSession else {return}
         captureSession.beginConfiguration()
+        
+        // Stop session on the current thread (assumed to be background thread already)
         if captureSession.isRunning {
             captureSession.stopRunning()
         }
@@ -164,6 +189,8 @@ extension CameraManager {
         }
         
         captureSession.commitConfiguration()
+        
+        // Start session on the current thread (assumed to be background thread already)
         if !captureSession.isRunning {
             captureSession.startRunning()
         }

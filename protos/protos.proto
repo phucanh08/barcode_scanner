@@ -5,28 +5,55 @@
 syntax = "proto3";
 option java_package = "com.anhlp.barcode_scanner";
 
+// protos/barcode.proto
+message BarcodeResult {
+    BarcodeFormat format = 1;
+    string rawValue = 2;
+    bytes rawBytes = 3;
+    Rect boundingBox = 4;
+    repeated Point cornerPoints = 5;
+    int64 timestamp = 6;
+}
+message Rect {
+    float left = 1;
+    float top = 2;
+    float right = 3;
+    float bottom = 4;
+}
+message Point {
+    float x = 1;
+    float y =2;
+}
+
 // protos/barcode_format.proto
 enum BarcodeFormat {
-    unknown = 0;
-    aztec = 1;
-    code39 = 2;
-    code93 = 3;
-    ean8 = 4;
-    ean13 = 5;
-    code128 = 6;
-    dataMatrix = 7;
-    qr = 8;
-    interleaved2of5 = 9;
-    upce = 10;
-    pdf417 = 11;
+    all = 0;
+    // 1D Barcode
+    code39 = 1;
+    code93 = 2;
+    code128 = 3;
+    itf = 4;
+    upce = 5;
+    ean8 = 6;
+    ean13 = 7;
+    codaBar = 8;
+    gs1DataBar = 9;
+    gs1DataBarExtended = 10;
+    // 2D Barcode
+    qr = 11;
+    pdf417 = 12;
+    dataMatrix = 13;
+    aztec = 14;
+    unknown = 15;
 }
+
 // protos/camera_settings.proto
 enum ResolutionPreset {
     hd1280x720 = 0;
     hd1920x1080 = 1;
 }
 enum CameraPosition {
-    font = 0;
+    front = 0;
     back = 1;
 }
 message CameraSettings {

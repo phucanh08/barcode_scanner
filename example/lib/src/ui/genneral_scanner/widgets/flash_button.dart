@@ -2,7 +2,7 @@ import 'package:barcode_scanner/barcode_scanner.dart';
 import 'package:flutter/cupertino.dart';
 
 class FlashButton extends StatefulWidget {
-  const FlashButton({super.key});
+  const FlashButton({Key? key}) : super(key: key);
 
   @override
   State<FlashButton> createState() => _FlashButtonState();

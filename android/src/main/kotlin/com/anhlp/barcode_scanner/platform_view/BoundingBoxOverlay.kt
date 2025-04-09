@@ -1,4 +1,4 @@
-package com.anhlp.barcode_scanner
+package com.anhlp.barcode_scanner.platform_view
 
 import android.content.Context
 import android.graphics.Canvas

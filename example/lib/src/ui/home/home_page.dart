@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import '../genneral_scanner/genneral_scanner_page.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,4 @@
+import CoreMedia
 extension UIImage {
     func fixOrientation() -> UIImage {
         guard let cgImage = self.cgImage else { return self }
@@ -37,5 +38,29 @@ extension UIImage {
         
         guard let newCgImage = ctx.makeImage() else { return self }
         return UIImage(cgImage: newCgImage)
+    }
+    
+    static func imageFromSampleBuffer(_ sampleBuffer: CMSampleBuffer) -> UIImage? {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return nil
+        }
+        
+        // Lock base address
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
+        
+        // Create CIImage
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        
+        // Create context and convert to CGImage
+        let context = CIContext()
+        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else {
+            CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
+            return nil
+        }
+        
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
+        
+        // Create UIImage from CGImage
+        return UIImage(cgImage: cgImage, scale: 1.0, orientation: .right)
     }
 }

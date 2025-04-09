@@ -11,6 +11,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'protos.pbenum.dart';
@@ -18,6 +19,279 @@ import 'protos.pbenum.dart';
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 export 'protos.pbenum.dart';
+
+/// protos/barcode.proto
+class BarcodeResult extends $pb.GeneratedMessage {
+  factory BarcodeResult({
+    BarcodeFormat? format,
+    $core.String? rawValue,
+    $core.List<$core.int>? rawBytes,
+    Rect? boundingBox,
+    $core.Iterable<Point>? cornerPoints,
+    $fixnum.Int64? timestamp,
+  }) {
+    final $result = create();
+    if (format != null) {
+      $result.format = format;
+    }
+    if (rawValue != null) {
+      $result.rawValue = rawValue;
+    }
+    if (rawBytes != null) {
+      $result.rawBytes = rawBytes;
+    }
+    if (boundingBox != null) {
+      $result.boundingBox = boundingBox;
+    }
+    if (cornerPoints != null) {
+      $result.cornerPoints.addAll(cornerPoints);
+    }
+    if (timestamp != null) {
+      $result.timestamp = timestamp;
+    }
+    return $result;
+  }
+  BarcodeResult._() : super();
+  factory BarcodeResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BarcodeResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BarcodeResult', createEmptyInstance: create)
+    ..e<BarcodeFormat>(1, _omitFieldNames ? '' : 'format', $pb.PbFieldType.OE, defaultOrMaker: BarcodeFormat.all, valueOf: BarcodeFormat.valueOf, enumValues: BarcodeFormat.values)
+    ..aOS(2, _omitFieldNames ? '' : 'rawValue', protoName: 'rawValue')
+    ..a<$core.List<$core.int>>(3, _omitFieldNames ? '' : 'rawBytes', $pb.PbFieldType.OY, protoName: 'rawBytes')
+    ..aOM<Rect>(4, _omitFieldNames ? '' : 'boundingBox', protoName: 'boundingBox', subBuilder: Rect.create)
+    ..pc<Point>(5, _omitFieldNames ? '' : 'cornerPoints', $pb.PbFieldType.PM, protoName: 'cornerPoints', subBuilder: Point.create)
+    ..aInt64(6, _omitFieldNames ? '' : 'timestamp')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BarcodeResult clone() => BarcodeResult()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BarcodeResult copyWith(void Function(BarcodeResult) updates) => super.copyWith((message) => updates(message as BarcodeResult)) as BarcodeResult;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BarcodeResult create() => BarcodeResult._();
+  BarcodeResult createEmptyInstance() => create();
+  static $pb.PbList<BarcodeResult> createRepeated() => $pb.PbList<BarcodeResult>();
+  @$core.pragma('dart2js:noInline')
+  static BarcodeResult getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BarcodeResult>(create);
+  static BarcodeResult? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  BarcodeFormat get format => $_getN(0);
+  @$pb.TagNumber(1)
+  set format(BarcodeFormat v) { $_setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFormat() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFormat() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get rawValue => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set rawValue($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRawValue() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRawValue() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.List<$core.int> get rawBytes => $_getN(2);
+  @$pb.TagNumber(3)
+  set rawBytes($core.List<$core.int> v) { $_setBytes(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRawBytes() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRawBytes() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  Rect get boundingBox => $_getN(3);
+  @$pb.TagNumber(4)
+  set boundingBox(Rect v) { $_setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasBoundingBox() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearBoundingBox() => $_clearField(4);
+  @$pb.TagNumber(4)
+  Rect ensureBoundingBox() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  $pb.PbList<Point> get cornerPoints => $_getList(4);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get timestamp => $_getI64(5);
+  @$pb.TagNumber(6)
+  set timestamp($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasTimestamp() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTimestamp() => $_clearField(6);
+}
+
+class Rect extends $pb.GeneratedMessage {
+  factory Rect({
+    $core.double? left,
+    $core.double? top,
+    $core.double? right,
+    $core.double? bottom,
+  }) {
+    final $result = create();
+    if (left != null) {
+      $result.left = left;
+    }
+    if (top != null) {
+      $result.top = top;
+    }
+    if (right != null) {
+      $result.right = right;
+    }
+    if (bottom != null) {
+      $result.bottom = bottom;
+    }
+    return $result;
+  }
+  Rect._() : super();
+  factory Rect.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Rect.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Rect', createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'left', $pb.PbFieldType.OF)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'top', $pb.PbFieldType.OF)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'right', $pb.PbFieldType.OF)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'bottom', $pb.PbFieldType.OF)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  Rect clone() => Rect()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  Rect copyWith(void Function(Rect) updates) => super.copyWith((message) => updates(message as Rect)) as Rect;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static Rect create() => Rect._();
+  Rect createEmptyInstance() => create();
+  static $pb.PbList<Rect> createRepeated() => $pb.PbList<Rect>();
+  @$core.pragma('dart2js:noInline')
+  static Rect getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Rect>(create);
+  static Rect? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.double get left => $_getN(0);
+  @$pb.TagNumber(1)
+  set left($core.double v) { $_setFloat(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLeft() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLeft() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get top => $_getN(1);
+  @$pb.TagNumber(2)
+  set top($core.double v) { $_setFloat(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTop() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTop() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get right => $_getN(2);
+  @$pb.TagNumber(3)
+  set right($core.double v) { $_setFloat(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRight() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRight() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get bottom => $_getN(3);
+  @$pb.TagNumber(4)
+  set bottom($core.double v) { $_setFloat(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasBottom() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearBottom() => $_clearField(4);
+}
+
+class Point extends $pb.GeneratedMessage {
+  factory Point({
+    $core.double? x,
+    $core.double? y,
+  }) {
+    final $result = create();
+    if (x != null) {
+      $result.x = x;
+    }
+    if (y != null) {
+      $result.y = y;
+    }
+    return $result;
+  }
+  Point._() : super();
+  factory Point.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Point.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Point', createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'x', $pb.PbFieldType.OF)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'y', $pb.PbFieldType.OF)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  Point clone() => Point()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  Point copyWith(void Function(Point) updates) => super.copyWith((message) => updates(message as Point)) as Point;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static Point create() => Point._();
+  Point createEmptyInstance() => create();
+  static $pb.PbList<Point> createRepeated() => $pb.PbList<Point>();
+  @$core.pragma('dart2js:noInline')
+  static Point getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Point>(create);
+  static Point? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.double get x => $_getN(0);
+  @$pb.TagNumber(1)
+  set x($core.double v) { $_setFloat(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasX() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearX() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get y => $_getN(1);
+  @$pb.TagNumber(2)
+  set y($core.double v) { $_setFloat(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasY() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearY() => $_clearField(2);
+}
 
 class CameraSettings extends $pb.GeneratedMessage {
   factory CameraSettings({
@@ -39,7 +313,7 @@ class CameraSettings extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CameraSettings', createEmptyInstance: create)
     ..e<ResolutionPreset>(1, _omitFieldNames ? '' : 'resolutionPreset', $pb.PbFieldType.OE, protoName: 'resolutionPreset', defaultOrMaker: ResolutionPreset.hd1280x720, valueOf: ResolutionPreset.valueOf, enumValues: ResolutionPreset.values)
-    ..e<CameraPosition>(2, _omitFieldNames ? '' : 'cameraPosition', $pb.PbFieldType.OE, protoName: 'cameraPosition', defaultOrMaker: CameraPosition.font, valueOf: CameraPosition.valueOf, enumValues: CameraPosition.values)
+    ..e<CameraPosition>(2, _omitFieldNames ? '' : 'cameraPosition', $pb.PbFieldType.OE, protoName: 'cameraPosition', defaultOrMaker: CameraPosition.front, valueOf: CameraPosition.valueOf, enumValues: CameraPosition.values)
     ..hasRequiredFields = false
   ;
 
@@ -109,7 +383,7 @@ class Configuration extends $pb.GeneratedMessage {
   factory Configuration.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Configuration', createEmptyInstance: create)
-    ..pc<BarcodeFormat>(1, _omitFieldNames ? '' : 'barcodeFormats', $pb.PbFieldType.KE, protoName: 'barcodeFormats', valueOf: BarcodeFormat.valueOf, enumValues: BarcodeFormat.values, defaultEnumValue: BarcodeFormat.unknown)
+    ..pc<BarcodeFormat>(1, _omitFieldNames ? '' : 'barcodeFormats', $pb.PbFieldType.KE, protoName: 'barcodeFormats', valueOf: BarcodeFormat.valueOf, enumValues: BarcodeFormat.values, defaultEnumValue: BarcodeFormat.all)
     ..aOM<CameraSettings>(2, _omitFieldNames ? '' : 'cameraSettings', protoName: 'cameraSettings', subBuilder: CameraSettings.create)
     ..aOM<ResultSettings>(3, _omitFieldNames ? '' : 'resultSettings', protoName: 'resultSettings', subBuilder: ResultSettings.create)
     ..hasRequiredFields = false
@@ -261,7 +535,7 @@ class ScanResult extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScanResult', createEmptyInstance: create)
     ..e<ResultType>(1, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: ResultType.Barcode, valueOf: ResultType.valueOf, enumValues: ResultType.values)
     ..aOS(2, _omitFieldNames ? '' : 'rawContent', protoName: 'rawContent')
-    ..e<BarcodeFormat>(3, _omitFieldNames ? '' : 'format', $pb.PbFieldType.OE, defaultOrMaker: BarcodeFormat.unknown, valueOf: BarcodeFormat.valueOf, enumValues: BarcodeFormat.values)
+    ..e<BarcodeFormat>(3, _omitFieldNames ? '' : 'format', $pb.PbFieldType.OE, defaultOrMaker: BarcodeFormat.all, valueOf: BarcodeFormat.valueOf, enumValues: BarcodeFormat.values)
     ..aOS(4, _omitFieldNames ? '' : 'formatNote', protoName: 'formatNote')
     ..hasRequiredFields = false
   ;

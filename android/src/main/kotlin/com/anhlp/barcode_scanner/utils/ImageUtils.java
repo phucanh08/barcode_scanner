@@ -1,4 +1,4 @@
-package com.anhlp.barcode_scanner;
+package com.anhlp.barcode_scanner.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
