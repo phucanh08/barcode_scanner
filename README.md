@@ -42,9 +42,13 @@ BarcodeScannerView(
       resolutionPreset: ResolutionPreset.hd1280x720,
       cameraPosition: CameraPosition.back
     ),
+    resultSettings: ResultSettings(
+      beepOnScan: true,
+      vibrateOnScan: true,
+    ),
   ),
   onData: (data) {
-  debugPrint('Barcode data: ${data.rawContent}');
+    debugPrint('Barcode data: ${data.rawValue}');
   },
 ),
 ```

@@ -21,8 +21,8 @@ class GeneralScannerPage extends StatelessWidget {
         if (image != null) {
           final results =
               await BarcodeScanner().detectBarcodesByImagePath(image.path);
-          for (var e in results ?? []) {
-            debugPrint("Mã vạch phát hiện: ${e.toString()}");
+          for (var e in results ?? <Barcode>[]) {
+            debugPrint("Mã vạch phát hiện: ${e.rawValue.toString()}");
           }
         } else {
           BarcodeScanner().resumeCamera();

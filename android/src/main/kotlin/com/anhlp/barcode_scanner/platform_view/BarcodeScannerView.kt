@@ -269,16 +269,38 @@ open class EventChannelHandler(context: Context) : EventChannel.StreamHandler {
     fun beep() {
         if (beepOnScan) {
             val toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-            toneGenerator.startTone(ToneGenerator.TONE_DTMF_S, 150)
+            toneGenerator.startTone(ToneGenerator.TONE_CDMA_PIP, 150)
         }
     }
 
     @RequiresPermission(Manifest.permission.VIBRATE)
     fun vibrate() {
         if (vibrateOnScan) {
-            val milliseconds = 300L
+            val milliseconds = 250L
             CoroutineScope(Dispatchers.IO).launch {
                 if (vibrator.hasVibrator()) {
+                    when(Build.VERSION.SDK_INT) {
+                        in Build.VERSION_CODES.BASE..Build.VERSION_CODES.N_MR1 -> {
+                            @Suppress("DEPRECATION")
+                            vibrator.vibrate(milliseconds)
+                        }
+                        in Build.VERSION_CODES.O..Build.VERSION_CODES.P -> {
+                            val effect =
+                                VibrationEffect.createOneShot(
+                                    milliseconds,
+                                    VibrationEffect.DEFAULT_AMPLITUDE
+                                )
+                            vibrator.vibrate(effect)
+                        }
+                        else -> {
+                            val effect =
+                                VibrationEffect.createOneShot(
+                                    milliseconds,
+                                    VibrationEffect.EFFECT_HEAVY_CLICK
+                                )
+                            vibrator.vibrate(effect)
+                        }
+                    }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val effect =
                             VibrationEffect.createOneShot(
@@ -290,7 +312,6 @@ open class EventChannelHandler(context: Context) : EventChannel.StreamHandler {
                         @Suppress("DEPRECATION")
                         vibrator.vibrate(milliseconds)
                     }
-                    delay(milliseconds)
                 }
             }
         }
