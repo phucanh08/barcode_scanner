@@ -196,8 +196,34 @@ extension CameraManager {
         }
     }
     
-    private func getCamera(for position: AVCaptureDevice.Position) -> AVCaptureDevice? {
-        return AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position)
+    func getCamera(for position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        
+        if #available(iOS 15.0, *) {
+            // Danh sách các loại camera ưu tiên cần quét
+            let deviceTypes: [AVCaptureDevice.DeviceType] = [
+                .builtInWideAngleCamera,
+                .builtInUltraWideCamera,
+                .builtInTelephotoCamera
+            ]
+            
+            let discoverySession = AVCaptureDevice.DiscoverySession(
+                deviceTypes: deviceTypes,
+                mediaType: .video,
+                position: position
+            )
+            
+            return discoverySession.devices
+                .filter {
+                    let isSupportAutoFocus = $0.isFocusModeSupported(.continuousAutoFocus) && $0.isFocusModeSupported(.autoFocus)
+                    return $0.minimumFocusDistance > 0 && isSupportAutoFocus
+                }
+            
+                .sorted { $0.minimumFocusDistance < $1.minimumFocusDistance }
+                .first
+        } else {
+            return AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position)
+        }
+        
     }
     
     private func addCameraInput(camera: AVCaptureDevice) {
@@ -223,13 +249,33 @@ extension CameraManager {
     
     private func enableAutoFocus(for camera: AVCaptureDevice) {
         do {
+            // Lock configuration để thay đổi các cài đặt của camera
             try camera.lockForConfiguration()
+            // Dùng defer để đảm bảo luôn unlock cấu hình khi ra khỏi phạm vi do-try-catch.
+            defer { camera.unlockForConfiguration() }
             
+            // Thiết lập chế độ lấy nét:
             if camera.isFocusModeSupported(.continuousAutoFocus) {
                 camera.focusMode = .continuousAutoFocus
+            } else if camera.isFocusModeSupported(.autoFocus) {
+                camera.focusMode = .autoFocus
             }
             
-            camera.unlockForConfiguration()
+            // Nếu thiết bị hỗ trợ lấy nét mượt (smooth autofocus), bật tính năng này
+            if camera.isSmoothAutoFocusSupported {
+                camera.isSmoothAutoFocusEnabled = true
+            }
+            
+            // Kiểm tra và thiết lập giới hạn khoảng cách tự động lấy nét
+            if #available(iOS 17.0, *) {
+                if camera.isAutoFocusRangeRestrictionSupported {
+                    camera.autoFocusRangeRestriction = .near
+                }
+            } else {
+                // Trên iOS cũ hơn, thay đổi giá trị autoFocusRangeRestriction cũng như vậy
+                camera.autoFocusRangeRestriction = .near
+            }
+            
         } catch {
             print("Error enabling autofocus: \(error)")
         }

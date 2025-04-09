@@ -64,10 +64,9 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
     }
     
     func didReceiveSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
-        if (!isProcessingLivestream) {
+        if (!isProcessingLivestream && !cameraManager.isPauseCamera) {
             isProcessingLivestream = true
             DispatchQueue.global(qos: .userInitiated).async {
-                
                 defer {
                     self.isProcessingLivestream = false
                 }
@@ -75,7 +74,7 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
                 var rect: CGRect? = nil
                 
                 var image: UIImage? = nil
-                if (!results.isEmpty) {
+                if (!results.isEmpty && !self.cameraManager.isPauseCamera) {
                     let boundingBox = results[0].boundingBox
                     rect = CGRect(x: CGFloat(boundingBox.left), y: CGFloat(boundingBox.top), width: CGFloat(boundingBox.right - boundingBox.left), height: CGFloat(boundingBox.bottom - boundingBox.top))
                     image = UIImage.imageFromSampleBuffer(sampleBuffer)
@@ -88,11 +87,6 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
                         self.didScanBarcodeWithResults(results)
                     }
                 }
-                DispatchQueue.main.async {
-                   
-                }
-                
-                
             }
         }
         
@@ -117,13 +111,18 @@ class BarcodeScannerView: NSObject, FlutterPlatformView, VideoSampleBufferDelega
         do {
             if(!results.isEmpty) {
                 eventChannelHandler.eventSink?(try results.map { try $0.serializedData() })
-                if (vibrationOnScan) {
-                    // Vibrate
-                    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-                }
-                if (beepOnScan) {
-                    // Beep (system sound ID 1057 is a short tone, you can try different ones)
-                    AudioServicesPlaySystemSound(1057)
+                DispatchQueue.main.async {
+                    if (self.beepOnScan) {
+                        // Beep (system sound ID 1057 is a short tone, you can try different ones)
+                        AudioServicesPlaySystemSound(1057)
+                    }
+                    if (self.vibrationOnScan) {
+                        // Vibrate
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.prepare()
+                        generator.impactOccurred()
+                    }
+                    
                 }
             }
         } catch {
