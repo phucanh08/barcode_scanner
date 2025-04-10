@@ -279,11 +279,12 @@ open class EventChannelHandler(context: Context) : EventChannel.StreamHandler {
             val milliseconds = 250L
             CoroutineScope(Dispatchers.IO).launch {
                 if (vibrator.hasVibrator()) {
-                    when(Build.VERSION.SDK_INT) {
+                    when (Build.VERSION.SDK_INT) {
                         in Build.VERSION_CODES.BASE..Build.VERSION_CODES.N_MR1 -> {
                             @Suppress("DEPRECATION")
                             vibrator.vibrate(milliseconds)
                         }
+
                         in Build.VERSION_CODES.O..Build.VERSION_CODES.P -> {
                             val effect =
                                 VibrationEffect.createOneShot(
@@ -292,6 +293,7 @@ open class EventChannelHandler(context: Context) : EventChannel.StreamHandler {
                                 )
                             vibrator.vibrate(effect)
                         }
+
                         else -> {
                             val effect =
                                 VibrationEffect.createOneShot(
