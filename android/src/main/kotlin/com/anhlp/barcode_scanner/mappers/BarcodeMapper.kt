@@ -48,7 +48,7 @@ object BarcodeMapper {
         builder.setFormat(format)
         builder.setRawValue(barcode.text)
         builder.setBoundingBox(boundingBox)
-        for (e in barcode.resultPoints) {
+        for (e in barcode.resultPoints.filterNotNull()) {
             val cornerPointsBuilder = Protos.Point.newBuilder()
             cornerPointsBuilder.setX(e.x)
             cornerPointsBuilder.setY(e.y)

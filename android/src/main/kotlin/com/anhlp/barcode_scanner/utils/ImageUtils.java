@@ -7,6 +7,7 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.media.ExifInterface;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -54,7 +55,7 @@ public class ImageUtils {
                     return bitmap;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("ImageUtils", "Error rotating image", e);
             return bitmap;
         }
     }
