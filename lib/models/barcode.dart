@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'bcbp/decode.dart';
+import 'package:bcbp/bcbp.dart' show bcbpDecode;
 import '../gen/protos/protos.pb.dart' show BarcodeResult;
 
 class Barcode {
@@ -136,7 +136,7 @@ class BarcodeBoardingPass extends BarcodeValue {
 
   static BarcodeBoardingPass? fromRawData(String? data) {
     try {
-      final result = decode(data ?? "");
+      final result = bcbpDecode(data ?? "");
       final legs = result.data?.legs ?? [];
       if (legs.isEmpty) {
         return null;
