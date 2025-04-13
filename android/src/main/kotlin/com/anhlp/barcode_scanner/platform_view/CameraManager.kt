@@ -201,7 +201,6 @@ class CameraManager(private val context: Context) {
 
     companion object {
         private const val TAG = "BarcodeScannerViewController"
-        private const val CAMERA_PERMISSION_REQUEST_CODE = 12345
     }
 }
 

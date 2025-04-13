@@ -33,13 +33,11 @@ import kotlinx.coroutines.withContext
 
 
 internal class BarcodeScannerView(
-    context: Context,
-    id: Int,
-    creationParams: Any?
-) : PlatformView, MethodChannel.MethodCallHandler, CameraStreamDelegate {
+    context: Context, id: Int, creationParams: Any?
+) : PlatformView, CameraStreamDelegate {
     private val _view = android.widget.FrameLayout(context)
     private val imageView = ImageView(context).apply {
-        scaleType = ImageView.ScaleType.CENTER_CROP // Đảm bảo ảnh lấp đầy và cắt nếu cần
+        scaleType = ImageView.ScaleType.CENTER_CROP
         layoutParams = android.widget.FrameLayout.LayoutParams(
             android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
             android.widget.FrameLayout.LayoutParams.MATCH_PARENT
@@ -61,10 +59,9 @@ internal class BarcodeScannerView(
 
         val binaryMessenger = BarcodeScannerPlugin.getBinaryMessenger()
         val methodChannel = MethodChannel(binaryMessenger, "com.anhlp.barcode_scanner/methods_$id")
-        methodChannel.setMethodCallHandler(this)
+        methodChannel.setMethodCallHandler(::onMethodCall)
         val eventChannel = EventChannel(binaryMessenger, "com.anhlp.barcode_scanner/events_$id")
         eventChannel.setStreamHandler(eventChannelHandler)
-
 
         cameraManager.delegate = this
         val config = Protos.Configuration.parseFrom(creationParams as ByteArray)
@@ -83,14 +80,10 @@ internal class BarcodeScannerView(
         cameraManager.stopCamera()
     }
 
-    override fun onMethodCall(
-        call: MethodCall,
-        result: MethodChannel.Result
-    ) {
+    private fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "detectBarcodesByImagePath" -> handleBarcodeDetectionResult(
-                call.arguments as String,
-                result
+                call.arguments as String, result
             )
 
             "pauseCamera" -> {
@@ -129,7 +122,7 @@ internal class BarcodeScannerView(
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 var bitmap = BitmapFactory.decodeFile(imagePath) ?: run {
-                    result.error("INVALID_IMAGE", "Không thể đọc ảnh từ đường dẫn", null)
+                    result.error("INVALID_IMAGE_PATH", "Không thể đọc ảnh từ đường dẫn", null)
                     return@launch
                 }
                 bitmap = ImageUtils.rotateImageIfRequired(bitmap, imagePath)
@@ -139,22 +132,12 @@ internal class BarcodeScannerView(
                 }
                 val barcodes = barcodeScanner.process(bitmap)
                 if (barcodes.isNotEmpty()) {
-                    val rectF = RectF(
-                        barcodes[0].boundingBox.left,
-                        barcodes[0].boundingBox.top,
-                        barcodes[0].boundingBox.right,
-                        barcodes[0].boundingBox.bottom
-                    )
-                    boundingBoxOverlay.setBoundingBox(
-                        rectF,
-                        bitmap.width,
-                        bitmap.height,
-                        false
-                    )
+                    val rectF = RectFMapper.toRectF(barcodes[0].boundingBox)
+                    boundingBoxOverlay.setBoundingBox(rectF, bitmap.width, bitmap.height, false)
                 }
                 result.success(barcodes.map { it.toByteArray() })
             } catch (e: Exception) {
-                result.error("BARCODE_DETECTION_ERROR", e.message, null)
+                result.success(emptyList<Any>())
             } finally {
                 delay(500)
                 isDetectingByPath = false
@@ -201,10 +184,7 @@ internal class BarcodeScannerView(
                     imageView.setImageBitmap(bitmap)
                     pauseCameraPreview()
                     boundingBoxOverlay.setBoundingBox(
-                        rectF,
-                        bitmap.width,
-                        bitmap.height,
-                        true
+                        rectF, bitmap.width, bitmap.height, true
                     )
                     eventChannelHandler.success(barcodes.map { it.toByteArray() })
                 } else {
@@ -216,18 +196,18 @@ internal class BarcodeScannerView(
 }
 
 open class EventChannelHandler(context: Context) : EventChannel.StreamHandler {
-    var vibrateOnScan: Boolean = false
-    var beepOnScan: Boolean = false
     private val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val vibratorManager =
             context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
         vibratorManager.defaultVibrator
     } else {
-        @Suppress("DEPRECATION")
-        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        @Suppress("DEPRECATION") context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     }
     private var eventSink: EventChannel.EventSink? = null
     private val handler = Handler(Looper.getMainLooper())
+
+    var vibrateOnScan: Boolean = false
+    var beepOnScan: Boolean = false
 
     open fun success(event: Any?) {
         handler.post { eventSink?.success(event) }
@@ -235,10 +215,7 @@ open class EventChannelHandler(context: Context) : EventChannel.StreamHandler {
         vibrate()
     }
 
-    override fun onListen(
-        arguments: Any?,
-        events: EventChannel.EventSink?
-    ) {
+    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         eventSink = events
     }
 
@@ -261,38 +238,30 @@ open class EventChannelHandler(context: Context) : EventChannel.StreamHandler {
                 if (vibrator.hasVibrator()) {
                     when (Build.VERSION.SDK_INT) {
                         in Build.VERSION_CODES.BASE..Build.VERSION_CODES.N_MR1 -> {
-                            @Suppress("DEPRECATION")
-                            vibrator.vibrate(milliseconds)
+                            @Suppress("DEPRECATION") vibrator.vibrate(milliseconds)
                         }
 
                         in Build.VERSION_CODES.O..Build.VERSION_CODES.P -> {
-                            val effect =
-                                VibrationEffect.createOneShot(
-                                    milliseconds,
-                                    VibrationEffect.DEFAULT_AMPLITUDE
-                                )
+                            val effect = VibrationEffect.createOneShot(
+                                milliseconds, VibrationEffect.DEFAULT_AMPLITUDE
+                            )
                             vibrator.vibrate(effect)
                         }
 
                         else -> {
-                            val effect =
-                                VibrationEffect.createOneShot(
-                                    milliseconds,
-                                    VibrationEffect.EFFECT_HEAVY_CLICK
-                                )
+                            val effect = VibrationEffect.createOneShot(
+                                milliseconds, VibrationEffect.EFFECT_HEAVY_CLICK
+                            )
                             vibrator.vibrate(effect)
                         }
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        val effect =
-                            VibrationEffect.createOneShot(
-                                milliseconds,
-                                VibrationEffect.DEFAULT_AMPLITUDE
-                            )
+                        val effect = VibrationEffect.createOneShot(
+                            milliseconds, VibrationEffect.DEFAULT_AMPLITUDE
+                        )
                         vibrator.vibrate(effect)
                     } else {
-                        @Suppress("DEPRECATION")
-                        vibrator.vibrate(milliseconds)
+                        @Suppress("DEPRECATION") vibrator.vibrate(milliseconds)
                     }
                 }
             }
