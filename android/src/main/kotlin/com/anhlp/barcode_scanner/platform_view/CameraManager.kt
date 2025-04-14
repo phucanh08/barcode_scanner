@@ -1,10 +1,12 @@
 package com.anhlp.barcode_scanner.platform_view
 
+import android.Manifest
 import android.content.Context
 import android.os.Build
 import android.util.Log
 import android.util.Size
 import android.view.WindowManager
+import androidx.annotation.RequiresPermission
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -39,6 +41,7 @@ class CameraManager(private val context: Context) {
     private var camera: androidx.camera.core.Camera? = null
 
     var delegate: CameraStreamDelegate? = null
+    private var permissionsHandler = PermissionManager()
 
     init {
         previewUseCase = Preview.Builder()
@@ -98,6 +101,18 @@ class CameraManager(private val context: Context) {
 
 
     fun startCamera() {
+        permissionsHandler.checkAndRequestCameraPermission {
+            if (it) {
+                mStartCamera()
+            } else {
+                Log.w("MyPlatformView", "Camera permission denied.")
+            }
+        }
+    }
+
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private fun mStartCamera() {
         val lifecycleOwner = getLifecycleOwner()
         if (lifecycleOwner == null) return
         backgroundExecutor?.shutdown()
